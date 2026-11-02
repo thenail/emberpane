@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Ayarlar</value>
+  </data>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Ayarlar</value>
+  </data>
+  <data name="ArrangeCard.Header" xml:space="preserve">
+    <value>Pencereleri düzenle</value>
+  </data>
+  <data name="ArrangeCard.Description" xml:space="preserve">
+    <value>Açık pencereleri, her birinin çevresinde küçük bir kenar boşluğuyla yan yana yerleştirir.</value>
+  </data>
+  <data name="ArrangeEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Pencereleri düzenle</value>
+  </data>
+  <data name="StartCard.Header" xml:space="preserve">
+    <value>Windows ile başlat</value>
+  </data>
+  <data name="StartCard.Description" xml:space="preserve">
+    <value>Oturum açtığınızda Ember Pane'i başlat.</value>
+  </data>
+  <data name="RunAtLogin.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Windows ile başlat</value>
+  </data>
+  <data name="QuitCard.Header" xml:space="preserve">
+    <value>Ember Pane'den çık</value>
+  </data>
+  <data name="QuitCard.Description" xml:space="preserve">
+    <value>Ember Pane yeniden başlatılana kadar pencereleri düzenlemeyi durdurur.</value>
+  </data>
+  <data name="QuitButton.Content" xml:space="preserve">
+    <value>Çık</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>Açık</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>Kapalı</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Sürüm {0}</value>
+  </data>
+  <data name="ActivityResting" xml:space="preserve">
+    <value>Dinleniyor</value>
+  </data>
+  <data name="ActivityLight" xml:space="preserve">
+    <value>Hafif</value>
+  </data>
+  <data name="ActivityWorking" xml:space="preserve">
+    <value>Çalışıyor</value>
+  </data>
+  <data name="ActivityBusy" xml:space="preserve">
+    <value>Meşgul</value>
+  </data>
+  <data name="ActivityVeryBusy" xml:space="preserve">
+    <value>Çok meşgul</value>
+  </data>
+  <data name="ActivityFlatOut" xml:space="preserve">
+    <value>Tam gaz</value>
+  </data>
+  <data name="StepperDecrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Azalt</value>
+  </data>
+  <data name="StepperIncrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Artır</value>
+  </data>
+  <data name="LayoutGroup.Text" xml:space="preserve">
+    <value>Düzen</value>
+  </data>
+  <data name="GapCard.Header" xml:space="preserve">
+    <value>Pencereler arası boşluk</value>
+  </data>
+  <data name="GapCard.Description" xml:space="preserve">
+    <value>Bir pencere ile sonraki arasındaki boşluk.</value>
+  </data>
+  <data name="MarginCard.Header" xml:space="preserve">
+    <value>Ekran kenarındaki boşluk</value>
+  </data>
+  <data name="MarginCard.Description" xml:space="preserve">
+    <value>Pencereler ile ekran kenarı arasındaki boşluk.</value>
+  </data>
+  <data name="CornersCard.Header" xml:space="preserve">
+    <value>Köşeler</value>
+  </data>
+  <data name="CornersCard.Description" xml:space="preserve">
+    <value>Çoğu uygulama buna uyar. Birkaçı kendi köşelerini çizer.</value>
+  </data>
+  <data name="CornersBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Köşeler</value>
+  </data>
+  <data name="CornersRound.Content" xml:space="preserve">
+    <value>Yuvarlak</value>
+  </data>
+  <data name="CornersSmall.Content" xml:space="preserve">
+    <value>Hafif yuvarlak</value>
+  </data>
+  <data name="CornersLeave.Content" xml:space="preserve">
+    <value>Olduğu gibi bırak</value>
+  </data>
+  <data name="GapLineCard.Header" xml:space="preserve">
+    <value>Pencereler arasında çizgi göster</value>
+  </data>
+  <data name="GapLineCard.Description" xml:space="preserve">
+    <value>İşaretçiyi iki pencere arasında bekletin, ardından boyutlandırmak için çizgiyi sürükleyin.</value>
+  </data>
+  <data name="GapLineEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Pencereler arasında çizgi göster</value>
+  </data>
+  <data name="BusyGroup.Text" xml:space="preserve">
+    <value>Uygulamaların ne kadar meşgul olduğunu göster</value>
+  </data>
+  <data name="BusyCard.Header" xml:space="preserve">
+    <value>Pencere kenarlıklarını renklendir</value>
+  </data>
+  <data name="BusyCard.Description" xml:space="preserve">
+    <value>Her pencerenin kenarlığı, uygulamasının ne kadar çalıştığına göre renk değiştirir.</value>
+  </data>
+  <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Pencere kenarlıklarını renklendir</value>
+  </data>
+  <data name="ReactCard.Header" xml:space="preserve">
+    <value>Renkler değişir</value>
+  </data>
+  <data name="ReactCard.Description" xml:space="preserve">
+    <value>Yavaş kısa çalışma anlarını yok sayar. Hızlı onları hemen gösterir.</value>
+  </data>
+  <data name="ReactBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Renkler değişir</value>
+  </data>
+  <data name="ReactQuickly.Content" xml:space="preserve">
+    <value>Hızlı</value>
+  </data>
+  <data name="ReactNormally.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="ReactSlowly.Content" xml:space="preserve">
+    <value>Yavaş</value>
+  </data>
+  <data name="ExceptionsGroup.Text" xml:space="preserve">
+    <value>Kendi kuralı olan uygulamalar</value>
+  </data>
+  <data name="ExceptionsNote.Text" xml:space="preserve">
+    <value>Diğerleri ne yaparsa yapsın bir uygulamanın pencerelerine ne olacağını seçin.</value>
+  </data>
+  <data name="NoRules.Text" xml:space="preserve">
+    <value>Henüz kendi kuralı olan uygulama yok.</value>
+  </data>
+  <data name="AddRuleButton.Content" xml:space="preserve">
+    <value>Uygulama ekle</value>
+  </data>
+  <data name="NoAppsToAdd" xml:space="preserve">
+    <value>Açık başka uygulama yok</value>
+  </data>
+  <data name="RemoveRule" xml:space="preserve">
+    <value>Kaldır</value>
+  </data>
+  <data name="ModeArrange" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
+  <data name="ModeLeaveWhere" xml:space="preserve">
+    <value>Koyduğum yerde bırak</value>
+  </data>
+  <data name="ModeLeaveAlone" xml:space="preserve">
+    <value>Dokunma</value>
+  </data>
+  <data name="SizeNone" xml:space="preserve">
+    <value>Yok</value>
+  </data>
+  <data name="SizeSmall" xml:space="preserve">
+    <value>Küçük</value>
+  </data>
+  <data name="SizeMedium" xml:space="preserve">
+    <value>Orta</value>
+  </data>
+  <data name="SizeLarge" xml:space="preserve">
+    <value>Büyük</value>
+  </data>
+  <data name="LayoutOneAtATime" xml:space="preserve">
+    <value>Tek tek</value>
+  </data>
+  <data name="LayoutTwoColumns" xml:space="preserve">
+    <value>İki sütun</value>
+  </data>
+  <data name="LayoutThreeColumns" xml:space="preserve">
+    <value>Üç sütun</value>
+  </data>
+  <data name="LayoutLargeAndSmall" xml:space="preserve">
+    <value>Büyük ve küçük</value>
+  </data>
+  <data name="LayoutLargeAndTwoSmall" xml:space="preserve">
+    <value>Büyük ve iki küçük</value>
+  </data>
+  <data name="LayoutFourAreas" xml:space="preserve">
+    <value>Dört alan</value>
+  </data>
+</root>

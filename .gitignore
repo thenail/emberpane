@@ -1,0 +1,14 @@
+# Build output
+build/
+x64/
+ARM64/
+**/Generated Files/
+
+# NuGet packages (restored by build.ps1)
+packages/
+tools/nuget.exe
+tools/InnoSetup/
+
+# Visual Studio
+.vs/
+*.user

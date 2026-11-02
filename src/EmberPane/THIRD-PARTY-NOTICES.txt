@@ -1,0 +1,14 @@
+Ember Pane - third-party notices
+===================================
+
+Ember Pane includes or is built from the components below. Their licence
+texts are reproduced here or, for the Microsoft packages, in the "licenses"
+folder next to this file.
+
+
+Microsoft components
+--------------------
+  Windows App SDK (WinUI and Foundation)   licenses\WindowsAppSDK\
+  Microsoft Edge WebView2 SDK              licenses\WebView2\
+  C++/WinRT                                licenses\CppWinRT\
+  Windows Implementation Library (WIL)     licenses\WIL\

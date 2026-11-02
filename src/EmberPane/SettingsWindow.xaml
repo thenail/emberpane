@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Windows 11 Settings layout: the title in the title bar, and one scrolling
+    page of cards grouped under headings, in the order you set things up.
+
+    Nothing here has a surface of its own. Everything sits on Mica, and the
+    only light shapes are the cards themselves - as in the Settings app.
+-->
+<Window
+    x:Class="EmberPane.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:EmberPane"
+    Title="Ember Pane">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Drawn by us, dragged by Windows: SetTitleBar hands it the caption behaviour -->
+        <Grid x:Name="AppTitleBar" Padding="16,0,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <FontIcon x:Name="TitleIcon" Glyph="&#xE8A9;" FontSize="16" />
+                <TextBlock x:Name="TitleText"
+                           Text="Ember Pane"
+                           Style="{StaticResource CaptionTextBlockStyle}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" x:Name="ContentScroll">
+            <StackPanel x:Name="Page" Padding="36,0,36,28" MaxWidth="1000">
+
+                <local:SettingsCard x:Uid="ArrangeCard" Glyph="&#xE8A9;">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock x:Name="ArrangeEnabledState" VerticalAlignment="Center" />
+                        <ToggleSwitch x:Name="ArrangeEnabled" x:Uid="ArrangeEnabled" OnContent="" OffContent="" MinWidth="0" />
+                    </StackPanel>
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="StartCard" Glyph="&#xE7B5;">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock x:Name="RunAtLoginState" VerticalAlignment="Center" />
+                        <ToggleSwitch x:Name="RunAtLogin" x:Uid="RunAtLogin" OnContent="" OffContent="" MinWidth="0" />
+                    </StackPanel>
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="QuitCard" Glyph="&#xE7E8;">
+                    <Button x:Name="QuitButton" x:Uid="QuitButton" />
+                </local:SettingsCard>
+
+                <TextBlock x:Uid="LayoutGroup" Style="{StaticResource GroupHeader}" />
+
+                <local:SettingsCard x:Uid="GapCard" Glyph="&#xE8A9;">
+                    <local:OffsetStepper x:Name="GapStepper" Minimum="0" Maximum="12" Step="1" />
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="MarginCard" Glyph="&#xE7F4;">
+                    <local:OffsetStepper x:Name="MarginStepper" Minimum="0" Maximum="32" Step="2" />
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="CornersCard" Glyph="&#xE81E;">
+                    <ComboBox x:Name="CornersBox" x:Uid="CornersBox" MinWidth="180">
+                        <ComboBoxItem x:Uid="CornersRound" />
+                        <ComboBoxItem x:Uid="CornersSmall" />
+                        <ComboBoxItem x:Uid="CornersLeave" />
+                    </ComboBox>
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="GapLineCard" Glyph="&#xE7AD;">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock x:Name="GapLineState" VerticalAlignment="Center" />
+                        <ToggleSwitch x:Name="GapLineEnabled" x:Uid="GapLineEnabled" OnContent="" OffContent="" MinWidth="0" />
+                    </StackPanel>
+                </local:SettingsCard>
+
+                <TextBlock x:Uid="BusyGroup" Style="{StaticResource GroupHeader}" />
+
+                <local:SettingsCard x:Uid="BusyCard" Glyph="&#xE9D9;">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock x:Name="FramesEnabledState" VerticalAlignment="Center" />
+                        <ToggleSwitch x:Name="FramesEnabled" x:Uid="FramesEnabled" OnContent="" OffContent="" MinWidth="0" />
+                    </StackPanel>
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="ReactCard" Glyph="&#xE916;">
+                    <ComboBox x:Name="ReactBox" x:Uid="ReactBox" MinWidth="180">
+                        <ComboBoxItem x:Uid="ReactQuickly" />
+                        <ComboBoxItem x:Uid="ReactNormally" />
+                        <ComboBoxItem x:Uid="ReactSlowly" />
+                    </ComboBox>
+                </local:SettingsCard>
+
+                <!-- What each colour means. Words too, so colour is never the only signal. -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                        Margin="0,0,0,4"
+                        Padding="16,14,16,14">
+                    <StackPanel x:Name="ColourKey" Orientation="Horizontal" Spacing="20" />
+                </Border>
+
+                <TextBlock x:Uid="ExceptionsGroup" Style="{StaticResource GroupHeader}" />
+
+                <TextBlock x:Uid="ExceptionsNote"
+                           Margin="1,0,0,8"
+                           TextWrapping="Wrap"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                <!-- One row per app, built in code -->
+                <StackPanel x:Name="RuleRows" Spacing="4" />
+
+                <TextBlock x:Name="NoRules"
+                           x:Uid="NoRules"
+                           Margin="1,4,0,8"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                <Button x:Name="AddRuleButton" x:Uid="AddRuleButton" Margin="0,8,0,0" />
+
+                <!-- Last and quiet: looked up when reporting a problem, not while setting up -->
+                <TextBlock x:Name="VersionText"
+                           Margin="1,28,0,0"
+                           IsTextSelectionEnabled="True"
+                           Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

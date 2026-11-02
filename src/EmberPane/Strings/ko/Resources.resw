@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>설정</value>
+  </data>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>설정</value>
+  </data>
+  <data name="ArrangeCard.Header" xml:space="preserve">
+    <value>창 정렬</value>
+  </data>
+  <data name="ArrangeCard.Description" xml:space="preserve">
+    <value>열린 창을 나란히 배치하고 각 창 주위에 작은 여백을 둡니다.</value>
+  </data>
+  <data name="ArrangeEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>창 정렬</value>
+  </data>
+  <data name="StartCard.Header" xml:space="preserve">
+    <value>Windows 시작 시 실행</value>
+  </data>
+  <data name="StartCard.Description" xml:space="preserve">
+    <value>로그인할 때 Ember Pane을 시작합니다.</value>
+  </data>
+  <data name="RunAtLogin.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Windows 시작 시 실행</value>
+  </data>
+  <data name="QuitCard.Header" xml:space="preserve">
+    <value>Ember Pane 끝내기</value>
+  </data>
+  <data name="QuitCard.Description" xml:space="preserve">
+    <value>Ember Pane을 다시 시작할 때까지 창 정렬을 멈춥니다.</value>
+  </data>
+  <data name="QuitButton.Content" xml:space="preserve">
+    <value>끝내기</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>켬</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>끔</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>버전 {0}</value>
+  </data>
+  <data name="ActivityResting" xml:space="preserve">
+    <value>쉬는 중</value>
+  </data>
+  <data name="ActivityLight" xml:space="preserve">
+    <value>가벼움</value>
+  </data>
+  <data name="ActivityWorking" xml:space="preserve">
+    <value>작업 중</value>
+  </data>
+  <data name="ActivityBusy" xml:space="preserve">
+    <value>바쁨</value>
+  </data>
+  <data name="ActivityVeryBusy" xml:space="preserve">
+    <value>매우 바쁨</value>
+  </data>
+  <data name="ActivityFlatOut" xml:space="preserve">
+    <value>최대치</value>
+  </data>
+  <data name="StepperDecrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>줄이기</value>
+  </data>
+  <data name="StepperIncrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>늘리기</value>
+  </data>
+  <data name="LayoutGroup.Text" xml:space="preserve">
+    <value>레이아웃</value>
+  </data>
+  <data name="GapCard.Header" xml:space="preserve">
+    <value>창 사이 간격</value>
+  </data>
+  <data name="GapCard.Description" xml:space="preserve">
+    <value>창과 다음 창 사이의 공간입니다.</value>
+  </data>
+  <data name="MarginCard.Header" xml:space="preserve">
+    <value>화면 가장자리 공간</value>
+  </data>
+  <data name="MarginCard.Description" xml:space="preserve">
+    <value>창과 화면 가장자리 사이의 공간입니다.</value>
+  </data>
+  <data name="CornersCard.Header" xml:space="preserve">
+    <value>모서리</value>
+  </data>
+  <data name="CornersCard.Description" xml:space="preserve">
+    <value>대부분의 앱이 이 설정을 따릅니다. 일부 앱은 모서리를 직접 그립니다.</value>
+  </data>
+  <data name="CornersBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>모서리</value>
+  </data>
+  <data name="CornersRound.Content" xml:space="preserve">
+    <value>둥글게</value>
+  </data>
+  <data name="CornersSmall.Content" xml:space="preserve">
+    <value>약간 둥글게</value>
+  </data>
+  <data name="CornersLeave.Content" xml:space="preserve">
+    <value>그대로 두기</value>
+  </data>
+  <data name="GapLineCard.Header" xml:space="preserve">
+    <value>창 사이에 선 표시</value>
+  </data>
+  <data name="GapLineCard.Description" xml:space="preserve">
+    <value>두 창 사이에 포인터를 두고 선을 끌어 크기를 조정합니다.</value>
+  </data>
+  <data name="GapLineEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>창 사이에 선 표시</value>
+  </data>
+  <data name="BusyGroup.Text" xml:space="preserve">
+    <value>앱이 얼마나 바쁜지 표시</value>
+  </data>
+  <data name="BusyCard.Header" xml:space="preserve">
+    <value>창 테두리에 색 입히기</value>
+  </data>
+  <data name="BusyCard.Description" xml:space="preserve">
+    <value>앱이 일하는 정도에 따라 각 창의 테두리 색이 바뀝니다.</value>
+  </data>
+  <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>창 테두리에 색 입히기</value>
+  </data>
+  <data name="ReactCard.Header" xml:space="preserve">
+    <value>색 변화</value>
+  </data>
+  <data name="ReactCard.Description" xml:space="preserve">
+    <value>느리게는 짧은 작업을 무시합니다. 빠르게는 바로 보여 줍니다.</value>
+  </data>
+  <data name="ReactBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>색 변화</value>
+  </data>
+  <data name="ReactQuickly.Content" xml:space="preserve">
+    <value>빠르게</value>
+  </data>
+  <data name="ReactNormally.Content" xml:space="preserve">
+    <value>보통</value>
+  </data>
+  <data name="ReactSlowly.Content" xml:space="preserve">
+    <value>느리게</value>
+  </data>
+  <data name="ExceptionsGroup.Text" xml:space="preserve">
+    <value>자체 규칙이 있는 앱</value>
+  </data>
+  <data name="ExceptionsNote.Text" xml:space="preserve">
+    <value>다른 창과 관계없이 앱의 창을 어떻게 할지 선택합니다.</value>
+  </data>
+  <data name="NoRules.Text" xml:space="preserve">
+    <value>아직 자체 규칙이 있는 앱이 없습니다.</value>
+  </data>
+  <data name="AddRuleButton.Content" xml:space="preserve">
+    <value>앱 추가</value>
+  </data>
+  <data name="NoAppsToAdd" xml:space="preserve">
+    <value>열려 있는 다른 앱이 없습니다</value>
+  </data>
+  <data name="RemoveRule" xml:space="preserve">
+    <value>제거</value>
+  </data>
+  <data name="ModeArrange" xml:space="preserve">
+    <value>정렬하기</value>
+  </data>
+  <data name="ModeLeaveWhere" xml:space="preserve">
+    <value>둔 자리에 그대로 두기</value>
+  </data>
+  <data name="ModeLeaveAlone" xml:space="preserve">
+    <value>건드리지 않기</value>
+  </data>
+  <data name="SizeNone" xml:space="preserve">
+    <value>없음</value>
+  </data>
+  <data name="SizeSmall" xml:space="preserve">
+    <value>작게</value>
+  </data>
+  <data name="SizeMedium" xml:space="preserve">
+    <value>보통</value>
+  </data>
+  <data name="SizeLarge" xml:space="preserve">
+    <value>크게</value>
+  </data>
+  <data name="LayoutOneAtATime" xml:space="preserve">
+    <value>한 번에 하나</value>
+  </data>
+  <data name="LayoutTwoColumns" xml:space="preserve">
+    <value>2열</value>
+  </data>
+  <data name="LayoutThreeColumns" xml:space="preserve">
+    <value>3열</value>
+  </data>
+  <data name="LayoutLargeAndSmall" xml:space="preserve">
+    <value>크게와 작게</value>
+  </data>
+  <data name="LayoutLargeAndTwoSmall" xml:space="preserve">
+    <value>크게 하나, 작게 둘</value>
+  </data>
+  <data name="LayoutFourAreas" xml:space="preserve">
+    <value>4분할</value>
+  </data>
+</root>

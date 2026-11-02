@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Imported by every project in the repo.
+
+  The "hybrid CRT": the Visual C++ runtime is linked statically, the Universal
+  CRT dynamically from Windows itself. The exe then needs no Visual C++
+  Redistributable, whose installer requires admin rights, so the per-user
+  installer (installer\EmberPane.iss) can install the app without them. It
+  is how the Windows App SDK's own DLLs are built.
+
+  Every project must use the same runtime library or they will not link
+  together, which is why this lives here rather than in each project.
+-->
+<Project>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <IgnoreSpecificDefaultLibraries Condition="'$(Configuration)'=='Debug'">libucrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries Condition="'$(Configuration)'=='Release'">libucrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">ucrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

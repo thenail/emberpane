@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Based on Visual Studio's "WinUI Blank App (C++/WinRT)" template, changed to
+  run UNPACKAGED (a plain .exe, no MSIX), which is what a tray utility that
+  starts with Windows wants.
+-->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PackagesDir>$(MSBuildThisFileDirectory)..\..\packages\</PackagesDir>
+  </PropertyGroup>
+  <Import Project="$(PackagesDir)Microsoft.Windows.CppWinRT.3.0.260818.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(PackagesDir)Microsoft.Windows.CppWinRT.3.0.260818.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(PackagesDir)Microsoft.Windows.SDK.BuildTools.10.0.28000.2705\build\Microsoft.Windows.SDK.BuildTools.props" Condition="Exists('$(PackagesDir)Microsoft.Windows.SDK.BuildTools.10.0.28000.2705\build\Microsoft.Windows.SDK.BuildTools.props')" />
+  <Import Project="$(PackagesDir)Microsoft.Windows.SDK.BuildTools.MSIX.1.7.251221100\build\Microsoft.Windows.SDK.BuildTools.MSIX.props" Condition="Exists('$(PackagesDir)Microsoft.Windows.SDK.BuildTools.MSIX.1.7.251221100\build\Microsoft.Windows.SDK.BuildTools.MSIX.props')" />
+  <Import Project="$(PackagesDir)Microsoft.WindowsAppSDK.Base.2.0.4\build\native\Microsoft.WindowsAppSDK.Base.props" Condition="Exists('$(PackagesDir)Microsoft.WindowsAppSDK.Base.2.0.4\build\native\Microsoft.WindowsAppSDK.Base.props')" />
+  <Import Project="$(PackagesDir)Microsoft.WindowsAppSDK.Foundation.2.3.12\build\native\Microsoft.WindowsAppSDK.Foundation.props" Condition="Exists('$(PackagesDir)Microsoft.WindowsAppSDK.Foundation.2.3.12\build\native\Microsoft.WindowsAppSDK.Foundation.props')" />
+  <Import Project="$(PackagesDir)Microsoft.WindowsAppSDK.InteractiveExperiences.2.1.9\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.props" Condition="Exists('$(PackagesDir)Microsoft.WindowsAppSDK.InteractiveExperiences.2.1.9\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.props')" />
+  <Import Project="$(PackagesDir)Microsoft.WindowsAppSDK.WinUI.2.3.9\build\native\Microsoft.WindowsAppSDK.WinUI.props" Condition="Exists('$(PackagesDir)Microsoft.WindowsAppSDK.WinUI.2.3.9\build\native\Microsoft.WindowsAppSDK.WinUI.props')" />
+  <PropertyGroup Label="Globals">
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <ProjectGuid>{329B461F-589B-4A93-9A57-9F8916B0EBA5}</ProjectGuid>
+    <ProjectName>EmberPane</ProjectName>
+    <RootNamespace>EmberPane</RootNamespace>
+    <TargetName>$(RootNamespace)</TargetName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>false</AppContainerApplication>
+    <AppxPackage>false</AppxPackage>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <!-- Windows 11: the border and corner attributes start at build 22000. -->
+    <WindowsTargetPlatformMinVersion>10.0.22000.0</WindowsTargetPlatformMinVersion>
+    <UseWinUI>true</UseWinUI>
+    <WinUISDKReferences>false</WinUISDKReferences>
+    <!-- A plain .exe rather than an MSIX package. -->
+    <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '18.0'">v145</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' &lt; '18.0'">v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <DesktopCompatible>true</DesktopCompatible>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <!-- Beside the other projects' output, in a folder of its own: a WinUI
+         app ships a folder of runtime files, not one exe. -->
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\$(Platform)\$(Configuration)\EmberPane\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\obj\EmberPane\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level4</WarningLevel>
+      <LanguageStandard Condition="'$(VisualStudioVersion)' &gt;= '18.0'">stdcpp20</LanguageStandard>
+      <LanguageStandard Condition="'$(VisualStudioVersion)' &lt; '18.0'">stdcpp17</LanguageStandard>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj /utf-8</AdditionalOptions>
+      <!-- Main.cpp decides between the tray host and the XAML UI, and
+           starts XAML itself for the UI. -->
+      <PreprocessorDefinitions>DISABLE_XAML_GENERATED_MAIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\EmberPane.Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;oleaut32.lib;ole32.lib;dwmapi.lib;shell32.lib;shcore.lib;gdi32.lib;user32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Manifest Include="app.manifest" />
+  </ItemGroup>
+  <!--
+    Translations, one folder per language. Windows picks from the user's
+    display-language list; en-US is the fallback (DefaultLanguage above).
+  -->
+  <ItemGroup>
+    <PRIResource Include="Strings\da\Resources.resw" />
+    <PRIResource Include="Strings\de\Resources.resw" />
+    <PRIResource Include="Strings\en-US\Resources.resw" />
+    <PRIResource Include="Strings\es\Resources.resw" />
+    <PRIResource Include="Strings\fi\Resources.resw" />
+    <PRIResource Include="Strings\fr\Resources.resw" />
+    <PRIResource Include="Strings\it\Resources.resw" />
+    <PRIResource Include="Strings\ja\Resources.resw" />
+    <PRIResource Include="Strings\ko\Resources.resw" />
+    <PRIResource Include="Strings\nb\Resources.resw" />
+    <PRIResource Include="Strings\nl\Resources.resw" />
+    <PRIResource Include="Strings\pl\Resources.resw" />
+    <PRIResource Include="Strings\pt-BR\Resources.resw" />
+    <PRIResource Include="Strings\pt-PT\Resources.resw" />
+    <PRIResource Include="Strings\ru\Resources.resw" />
+    <PRIResource Include="Strings\sv\Resources.resw" />
+    <PRIResource Include="Strings\tr\Resources.resw" />
+    <PRIResource Include="Strings\zh-Hans\Resources.resw" />
+    <PRIResource Include="Strings\zh-Hant\Resources.resw" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="EmberPane.rc" />
+    <ClInclude Include="AppIcon.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="CommandLine.h" />
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="Host.h" />
+    <ClInclude Include="Link.h" />
+    <ClInclude Include="Strings.h" />
+    <ClInclude Include="Probes.h" />
+    <ClInclude Include="Services.h" />
+    <ClInclude Include="ThemeBrush.h" />
+    <ClInclude Include="Trace.h" />
+    <ClInclude Include="TrayIcon.h" />
+    <ClInclude Include="Native\Shell.h" />
+    <ClInclude Include="Native\SystemEvents.h" />
+    <ClInclude Include="Managed\CpuSampler.h" />
+    <ClInclude Include="Managed\Arranger.h" />
+    <ClInclude Include="Managed\Overlays.h" />
+    <ClInclude Include="Native\Monitors.h" />
+    <ClInclude Include="Native\WindowDocking.h" />
+    <ClInclude Include="Managed\FrameService.h" />
+    <ClInclude Include="Managed\ManagedWindow.h" />
+    <ClInclude Include="Managed\Timing.h" />
+    <ClInclude Include="Managed\WindowMirror.h" />
+    <ClInclude Include="Managed\WindowTracker.h" />
+    <ClInclude Include="Native\ProcessTree.h" />
+    <ClInclude Include="Native\VirtualDesktops.h" />
+    <ClInclude Include="Native\WindowFacts.h" />
+    <ClInclude Include="Native\WinEvents.h" />
+    <ClInclude Include="Controls\OffsetStepper.h">
+      <DependentUpon>Controls\OffsetStepper.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="Controls\SettingsCard.h">
+      <DependentUpon>Controls\SettingsCard.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="App.xaml.h">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="FlyoutWindow.xaml.h">
+      <DependentUpon>FlyoutWindow.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="SettingsWindow.xaml.h">
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+    <Page Include="FlyoutWindow.xaml" />
+    <Page Include="SettingsWindow.xaml" />
+    <Page Include="Themes\Generic.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Host.cpp" />
+    <ClCompile Include="Link.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Strings.cpp" />
+    <ClCompile Include="Probes.cpp" />
+    <ClCompile Include="Services.cpp" />
+    <ClCompile Include="TrayIcon.cpp" />
+    <ClCompile Include="Native\Shell.cpp" />
+    <ClCompile Include="Native\SystemEvents.cpp" />
+    <ClCompile Include="Managed\CpuSampler.cpp" />
+    <ClCompile Include="Managed\Arranger.cpp" />
+    <ClCompile Include="Managed\Overlays.cpp" />
+    <ClCompile Include="Native\Monitors.cpp" />
+    <ClCompile Include="Native\WindowDocking.cpp" />
+    <ClCompile Include="Managed\FrameService.cpp" />
+    <ClCompile Include="Managed\WindowMirror.cpp" />
+    <ClCompile Include="Managed\WindowTracker.cpp" />
+    <ClCompile Include="Native\ProcessTree.cpp" />
+    <ClCompile Include="Native\VirtualDesktops.cpp" />
+    <ClCompile Include="Native\WindowFacts.cpp" />
+    <ClCompile Include="Native\WinEvents.cpp" />
+    <ClCompile Include="Controls\OffsetStepper.cpp">
+      <DependentUpon>Controls\OffsetStepper.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="Controls\SettingsCard.cpp">
+      <DependentUpon>Controls\SettingsCard.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="App.xaml.cpp">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="FlyoutWindow.xaml.cpp">
+      <DependentUpon>FlyoutWindow.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="SettingsWindow.xaml.cpp">
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="Controls\OffsetStepper.idl" />
+    <Midl Include="Controls\SettingsCard.idl" />
+    <Midl Include="FlyoutWindow.idl">
+      <SubType>Code</SubType>
+      <DependentUpon>FlyoutWindow.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="SettingsWindow.idl">
+      <SubType>Code</SubType>
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <!--
+      Licence notices, shipped with the binaries as the licences require:
+      each bundled package's own, copied from the package itself so they
+      cannot drift from its version.
+    -->
+    <CopyFileToFolders Include="THIRD-PARTY-NOTICES.txt">
+      <DestinationFolders>$(OutDir)</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(PackagesDir)Microsoft.WindowsAppSDK.WinUI.2.3.9\license.txt;$(PackagesDir)Microsoft.WindowsAppSDK.WinUI.2.3.9\NOTICE.txt">
+      <DestinationFolders>$(OutDir)licenses\WindowsAppSDK</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(PackagesDir)Microsoft.Web.WebView2.1.0.3719.77\LICENSE.txt;$(PackagesDir)Microsoft.Web.WebView2.1.0.3719.77\NOTICE.txt">
+      <DestinationFolders>$(OutDir)licenses\WebView2</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(PackagesDir)Microsoft.Windows.CppWinRT.3.0.260818.1\LICENSE">
+      <DestinationFolders>$(OutDir)licenses\CppWinRT</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(PackagesDir)Microsoft.Windows.ImplementationLibrary.1.0.260126.7\LICENSE;$(PackagesDir)Microsoft.Windows.ImplementationLibrary.1.0.260126.7\ThirdPartyNotices.txt">
+      <DestinationFolders>$(OutDir)licenses\WIL</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EmberPane.Core\EmberPane.Core.vcxproj">
+      <Project>{D95EFB5A-08CF-4D42-9618-46F63FBFCD66}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(PackagesDir)Microsoft.Web.WebView2.1.0.3719.77\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(PackagesDir)Microsoft.Web.WebView2.1.0.3719.77\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="$(PackagesDir)Microsoft.Windows.CppWinRT.3.0.260818.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(PackagesDir)Microsoft.Windows.CppWinRT.3.0.260818.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(PackagesDir)Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('$(PackagesDir)Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+    <Import Project="$(PackagesDir)Microsoft.Windows.SDK.BuildTools.10.0.28000.2705\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('$(PackagesDir)Microsoft.Windows.SDK.BuildTools.10.0.28000.2705\build\Microsoft.Windows.SDK.BuildTools.targets')" />
+    <Import Project="$(PackagesDir)Microsoft.Windows.SDK.BuildTools.MSIX.1.7.251221100\build\Microsoft.Windows.SDK.BuildTools.MSIX.targets" Condition="Exists('$(PackagesDir)Microsoft.Windows.SDK.BuildTools.MSIX.1.7.251221100\build\Microsoft.Windows.SDK.BuildTools.MSIX.targets')" />
+    <Import Project="$(PackagesDir)Microsoft.WindowsAppSDK.Base.2.0.4\build\native\Microsoft.WindowsAppSDK.Base.targets" Condition="Exists('$(PackagesDir)Microsoft.WindowsAppSDK.Base.2.0.4\build\native\Microsoft.WindowsAppSDK.Base.targets')" />
+    <Import Project="$(PackagesDir)Microsoft.WindowsAppSDK.Foundation.2.3.12\build\native\Microsoft.WindowsAppSDK.Foundation.targets" Condition="Exists('$(PackagesDir)Microsoft.WindowsAppSDK.Foundation.2.3.12\build\native\Microsoft.WindowsAppSDK.Foundation.targets')" />
+    <Import Project="$(PackagesDir)Microsoft.WindowsAppSDK.InteractiveExperiences.2.1.9\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets" Condition="Exists('$(PackagesDir)Microsoft.WindowsAppSDK.InteractiveExperiences.2.1.9\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets')" />
+    <Import Project="$(PackagesDir)Microsoft.WindowsAppSDK.WinUI.2.3.9\build\native\Microsoft.WindowsAppSDK.WinUI.targets" Condition="Exists('$(PackagesDir)Microsoft.WindowsAppSDK.WinUI.2.3.9\build\native\Microsoft.WindowsAppSDK.WinUI.targets')" />
+  </ImportGroup>
+</Project>

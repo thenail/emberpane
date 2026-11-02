@@ -1,0 +1,33 @@
+namespace EmberPane
+{
+    /// A Windows 11 settings row: glyph, title and description on the left,
+    /// the control (Content) on the right, and optionally a section beneath
+    /// (Body) - below a divider, or indented under the title when IsWide.
+    ///
+    /// Modelled on the Community Toolkit's SettingsCard, which is what the
+    /// Windows 11 Settings app is built from. That one is C#, so it cannot be
+    /// used here; this carries its metrics.
+    [default_interface]
+    runtimeclass SettingsCard : Microsoft.UI.Xaml.Controls.ContentControl
+    {
+        SettingsCard();
+
+        String Header;
+        String Description;
+
+        /// A Segoe Fluent Icons glyph; empty for none.
+        String Glyph;
+
+        Object Body;
+
+        /// Body sits under the title with no divider: for content that IS the
+        /// setting, such as the map, rather than settings that depend on it.
+        Boolean IsWide;
+
+        static Microsoft.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty DescriptionProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty GlyphProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty BodyProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty IsWideProperty{ get; };
+    }
+}

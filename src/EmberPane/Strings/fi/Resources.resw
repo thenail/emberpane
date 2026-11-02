@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Asetukset</value>
+  </data>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Asetukset</value>
+  </data>
+  <data name="ArrangeCard.Header" xml:space="preserve">
+    <value>Järjestä ikkunat</value>
+  </data>
+  <data name="ArrangeCard.Description" xml:space="preserve">
+    <value>Aseta avoimet ikkunat vierekkäin, kunkin ympärille pieni marginaali.</value>
+  </data>
+  <data name="ArrangeEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Järjestä ikkunat</value>
+  </data>
+  <data name="StartCard.Header" xml:space="preserve">
+    <value>Käynnistä Windowsin mukana</value>
+  </data>
+  <data name="StartCard.Description" xml:space="preserve">
+    <value>Käynnistä Ember Pane, kun kirjaudut sisään.</value>
+  </data>
+  <data name="RunAtLogin.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Käynnistä Windowsin mukana</value>
+  </data>
+  <data name="QuitCard.Header" xml:space="preserve">
+    <value>Lopeta Ember Pane</value>
+  </data>
+  <data name="QuitCard.Description" xml:space="preserve">
+    <value>Lopeta ikkunoiden järjestäminen, kunnes Ember Pane käynnistetään uudelleen.</value>
+  </data>
+  <data name="QuitButton.Content" xml:space="preserve">
+    <value>Lopeta</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>Käytössä</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>Ei käytössä</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Versio {0}</value>
+  </data>
+  <data name="ActivityResting" xml:space="preserve">
+    <value>Levossa</value>
+  </data>
+  <data name="ActivityLight" xml:space="preserve">
+    <value>Kevyt</value>
+  </data>
+  <data name="ActivityWorking" xml:space="preserve">
+    <value>Työskentelee</value>
+  </data>
+  <data name="ActivityBusy" xml:space="preserve">
+    <value>Kiireinen</value>
+  </data>
+  <data name="ActivityVeryBusy" xml:space="preserve">
+    <value>Hyvin kiireinen</value>
+  </data>
+  <data name="ActivityFlatOut" xml:space="preserve">
+    <value>Täysillä</value>
+  </data>
+  <data name="StepperDecrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Vähemmän</value>
+  </data>
+  <data name="StepperIncrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Enemmän</value>
+  </data>
+  <data name="LayoutGroup.Text" xml:space="preserve">
+    <value>Asettelu</value>
+  </data>
+  <data name="GapCard.Header" xml:space="preserve">
+    <value>Ikkunoiden väli</value>
+  </data>
+  <data name="GapCard.Description" xml:space="preserve">
+    <value>Ikkunan ja seuraavan ikkunan välinen tila.</value>
+  </data>
+  <data name="MarginCard.Header" xml:space="preserve">
+    <value>Tila näytön reunalla</value>
+  </data>
+  <data name="MarginCard.Description" xml:space="preserve">
+    <value>Ikkunoiden ja näytön reunan välinen tila.</value>
+  </data>
+  <data name="CornersCard.Header" xml:space="preserve">
+    <value>Kulmat</value>
+  </data>
+  <data name="CornersCard.Description" xml:space="preserve">
+    <value>Useimmat sovellukset noudattavat tätä. Muutama piirtää omat kulmansa.</value>
+  </data>
+  <data name="CornersBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Kulmat</value>
+  </data>
+  <data name="CornersRound.Content" xml:space="preserve">
+    <value>Pyöristetyt</value>
+  </data>
+  <data name="CornersSmall.Content" xml:space="preserve">
+    <value>Hieman pyöristetyt</value>
+  </data>
+  <data name="CornersLeave.Content" xml:space="preserve">
+    <value>Jätä ennalleen</value>
+  </data>
+  <data name="GapLineCard.Header" xml:space="preserve">
+    <value>Näytä viiva ikkunoiden välissä</value>
+  </data>
+  <data name="GapLineCard.Description" xml:space="preserve">
+    <value>Pidä osoitinta kahden ikkunan välissä ja muuta niiden kokoa vetämällä viivaa.</value>
+  </data>
+  <data name="GapLineEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Näytä viiva ikkunoiden välissä</value>
+  </data>
+  <data name="BusyGroup.Text" xml:space="preserve">
+    <value>Näytä, kuinka kiireisiä sovellukset ovat</value>
+  </data>
+  <data name="BusyCard.Header" xml:space="preserve">
+    <value>Väritä ikkunoiden reunat</value>
+  </data>
+  <data name="BusyCard.Description" xml:space="preserve">
+    <value>Kunkin ikkunan reuna vaihtaa väriä sen mukaan, kuinka kovasti sen sovellus työskentelee.</value>
+  </data>
+  <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Väritä ikkunoiden reunat</value>
+  </data>
+  <data name="ReactCard.Header" xml:space="preserve">
+    <value>Värit vaihtuvat</value>
+  </data>
+  <data name="ReactCard.Description" xml:space="preserve">
+    <value>Hitaasti ohittaa lyhyet työjaksot. Nopeasti näyttää ne heti.</value>
+  </data>
+  <data name="ReactBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Värit vaihtuvat</value>
+  </data>
+  <data name="ReactQuickly.Content" xml:space="preserve">
+    <value>Nopeasti</value>
+  </data>
+  <data name="ReactNormally.Content" xml:space="preserve">
+    <value>Normaalisti</value>
+  </data>
+  <data name="ReactSlowly.Content" xml:space="preserve">
+    <value>Hitaasti</value>
+  </data>
+  <data name="ExceptionsGroup.Text" xml:space="preserve">
+    <value>Sovellukset, joilla on oma sääntö</value>
+  </data>
+  <data name="ExceptionsNote.Text" xml:space="preserve">
+    <value>Valitse, mitä sovelluksen ikkunoille tapahtuu muista riippumatta.</value>
+  </data>
+  <data name="NoRules.Text" xml:space="preserve">
+    <value>Millään sovelluksella ei ole vielä omaa sääntöä.</value>
+  </data>
+  <data name="AddRuleButton.Content" xml:space="preserve">
+    <value>Lisää sovellus</value>
+  </data>
+  <data name="NoAppsToAdd" xml:space="preserve">
+    <value>Muita sovelluksia ei ole auki</value>
+  </data>
+  <data name="RemoveRule" xml:space="preserve">
+    <value>Poista</value>
+  </data>
+  <data name="ModeArrange" xml:space="preserve">
+    <value>Järjestä</value>
+  </data>
+  <data name="ModeLeaveWhere" xml:space="preserve">
+    <value>Jätä paikkaan, johon sen laitoin</value>
+  </data>
+  <data name="ModeLeaveAlone" xml:space="preserve">
+    <value>Jätä rauhaan</value>
+  </data>
+  <data name="SizeNone" xml:space="preserve">
+    <value>Ei mitään</value>
+  </data>
+  <data name="SizeSmall" xml:space="preserve">
+    <value>Pieni</value>
+  </data>
+  <data name="SizeMedium" xml:space="preserve">
+    <value>Keskikokoinen</value>
+  </data>
+  <data name="SizeLarge" xml:space="preserve">
+    <value>Suuri</value>
+  </data>
+  <data name="LayoutOneAtATime" xml:space="preserve">
+    <value>Yksi kerrallaan</value>
+  </data>
+  <data name="LayoutTwoColumns" xml:space="preserve">
+    <value>Kaksi saraketta</value>
+  </data>
+  <data name="LayoutThreeColumns" xml:space="preserve">
+    <value>Kolme saraketta</value>
+  </data>
+  <data name="LayoutLargeAndSmall" xml:space="preserve">
+    <value>Suuri ja pieni</value>
+  </data>
+  <data name="LayoutLargeAndTwoSmall" xml:space="preserve">
+    <value>Suuri ja kaksi pientä</value>
+  </data>
+  <data name="LayoutFourAreas" xml:space="preserve">
+    <value>Neljä aluetta</value>
+  </data>
+</root>

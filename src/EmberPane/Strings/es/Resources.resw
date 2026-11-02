@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Configuración</value>
+  </data>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Configuración</value>
+  </data>
+  <data name="ArrangeCard.Header" xml:space="preserve">
+    <value>Organizar ventanas</value>
+  </data>
+  <data name="ArrangeCard.Description" xml:space="preserve">
+    <value>Coloca las ventanas abiertas una junto a otra, con un pequeño margen alrededor de cada una.</value>
+  </data>
+  <data name="ArrangeEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Organizar ventanas</value>
+  </data>
+  <data name="StartCard.Header" xml:space="preserve">
+    <value>Iniciar con Windows</value>
+  </data>
+  <data name="StartCard.Description" xml:space="preserve">
+    <value>Abrir Ember Pane al iniciar sesión.</value>
+  </data>
+  <data name="RunAtLogin.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Iniciar con Windows</value>
+  </data>
+  <data name="QuitCard.Header" xml:space="preserve">
+    <value>Salir de Ember Pane</value>
+  </data>
+  <data name="QuitCard.Description" xml:space="preserve">
+    <value>Deja de organizar ventanas hasta que Ember Pane se inicie de nuevo.</value>
+  </data>
+  <data name="QuitButton.Content" xml:space="preserve">
+    <value>Salir</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>Activado</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>Desactivado</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Versión {0}</value>
+  </data>
+  <data name="ActivityResting" xml:space="preserve">
+    <value>En reposo</value>
+  </data>
+  <data name="ActivityLight" xml:space="preserve">
+    <value>Ligera</value>
+  </data>
+  <data name="ActivityWorking" xml:space="preserve">
+    <value>Trabajando</value>
+  </data>
+  <data name="ActivityBusy" xml:space="preserve">
+    <value>Ocupada</value>
+  </data>
+  <data name="ActivityVeryBusy" xml:space="preserve">
+    <value>Muy ocupada</value>
+  </data>
+  <data name="ActivityFlatOut" xml:space="preserve">
+    <value>A tope</value>
+  </data>
+  <data name="StepperDecrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Menos</value>
+  </data>
+  <data name="StepperIncrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Más</value>
+  </data>
+  <data name="LayoutGroup.Text" xml:space="preserve">
+    <value>Diseño</value>
+  </data>
+  <data name="GapCard.Header" xml:space="preserve">
+    <value>Separación entre ventanas</value>
+  </data>
+  <data name="GapCard.Description" xml:space="preserve">
+    <value>El espacio entre una ventana y la siguiente.</value>
+  </data>
+  <data name="MarginCard.Header" xml:space="preserve">
+    <value>Espacio en el borde de la pantalla</value>
+  </data>
+  <data name="MarginCard.Description" xml:space="preserve">
+    <value>El espacio entre las ventanas y el borde de la pantalla.</value>
+  </data>
+  <data name="CornersCard.Header" xml:space="preserve">
+    <value>Esquinas</value>
+  </data>
+  <data name="CornersCard.Description" xml:space="preserve">
+    <value>La mayoría de las apps lo respetan. Algunas dibujan sus propias esquinas.</value>
+  </data>
+  <data name="CornersBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Esquinas</value>
+  </data>
+  <data name="CornersRound.Content" xml:space="preserve">
+    <value>Redondeadas</value>
+  </data>
+  <data name="CornersSmall.Content" xml:space="preserve">
+    <value>Ligeramente redondeadas</value>
+  </data>
+  <data name="CornersLeave.Content" xml:space="preserve">
+    <value>Dejarlas como están</value>
+  </data>
+  <data name="GapLineCard.Header" xml:space="preserve">
+    <value>Mostrar una línea entre ventanas</value>
+  </data>
+  <data name="GapLineCard.Description" xml:space="preserve">
+    <value>Deja el puntero entre dos ventanas y arrastra la línea para cambiar su tamaño.</value>
+  </data>
+  <data name="GapLineEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Mostrar una línea entre ventanas</value>
+  </data>
+  <data name="BusyGroup.Text" xml:space="preserve">
+    <value>Mostrar lo ocupadas que están las apps</value>
+  </data>
+  <data name="BusyCard.Header" xml:space="preserve">
+    <value>Colorear los bordes de las ventanas</value>
+  </data>
+  <data name="BusyCard.Description" xml:space="preserve">
+    <value>El borde de cada ventana cambia de color según lo mucho que trabaje su app.</value>
+  </data>
+  <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Colorear los bordes de las ventanas</value>
+  </data>
+  <data name="ReactCard.Header" xml:space="preserve">
+    <value>Los colores cambian</value>
+  </data>
+  <data name="ReactCard.Description" xml:space="preserve">
+    <value>Lentamente ignora las ráfagas cortas de trabajo. Rápidamente las muestra al momento.</value>
+  </data>
+  <data name="ReactBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Los colores cambian</value>
+  </data>
+  <data name="ReactQuickly.Content" xml:space="preserve">
+    <value>Rápidamente</value>
+  </data>
+  <data name="ReactNormally.Content" xml:space="preserve">
+    <value>Normalmente</value>
+  </data>
+  <data name="ReactSlowly.Content" xml:space="preserve">
+    <value>Lentamente</value>
+  </data>
+  <data name="ExceptionsGroup.Text" xml:space="preserve">
+    <value>Apps con regla propia</value>
+  </data>
+  <data name="ExceptionsNote.Text" xml:space="preserve">
+    <value>Elige qué ocurre con las ventanas de una app, hagan lo que hagan las demás.</value>
+  </data>
+  <data name="NoRules.Text" xml:space="preserve">
+    <value>Ninguna app tiene todavía su propia regla.</value>
+  </data>
+  <data name="AddRuleButton.Content" xml:space="preserve">
+    <value>Añadir una app</value>
+  </data>
+  <data name="NoAppsToAdd" xml:space="preserve">
+    <value>No hay más apps abiertas</value>
+  </data>
+  <data name="RemoveRule" xml:space="preserve">
+    <value>Quitar</value>
+  </data>
+  <data name="ModeArrange" xml:space="preserve">
+    <value>Organizarla</value>
+  </data>
+  <data name="ModeLeaveWhere" xml:space="preserve">
+    <value>Dejarla donde la puse</value>
+  </data>
+  <data name="ModeLeaveAlone" xml:space="preserve">
+    <value>Dejarla en paz</value>
+  </data>
+  <data name="SizeNone" xml:space="preserve">
+    <value>Ninguno</value>
+  </data>
+  <data name="SizeSmall" xml:space="preserve">
+    <value>Pequeño</value>
+  </data>
+  <data name="SizeMedium" xml:space="preserve">
+    <value>Mediano</value>
+  </data>
+  <data name="SizeLarge" xml:space="preserve">
+    <value>Grande</value>
+  </data>
+  <data name="LayoutOneAtATime" xml:space="preserve">
+    <value>De una en una</value>
+  </data>
+  <data name="LayoutTwoColumns" xml:space="preserve">
+    <value>Dos columnas</value>
+  </data>
+  <data name="LayoutThreeColumns" xml:space="preserve">
+    <value>Tres columnas</value>
+  </data>
+  <data name="LayoutLargeAndSmall" xml:space="preserve">
+    <value>Grande y pequeña</value>
+  </data>
+  <data name="LayoutLargeAndTwoSmall" xml:space="preserve">
+    <value>Grande y dos pequeñas</value>
+  </data>
+  <data name="LayoutFourAreas" xml:space="preserve">
+    <value>Cuatro zonas</value>
+  </data>
+</root>

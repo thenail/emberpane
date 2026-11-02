@@ -1,0 +1,28 @@
+namespace EmberPane
+{
+    /// A minus button, two stacked lines of text, and a plus button.
+    [default_interface]
+    runtimeclass OffsetStepper : Microsoft.UI.Xaml.Controls.Control
+    {
+        OffsetStepper();
+
+        Int32 Value;
+        Int32 Minimum;
+        Int32 Maximum;
+
+        /// How far one press moves it.
+        Int32 Step;
+
+        /// Bold line: the value.
+        String ValueText;
+
+        /// Caption line: what it is a value of.
+        String CaptionText;
+
+        event Windows.Foundation.EventHandler<Object> ValueChanged;
+
+        static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty ValueTextProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty CaptionTextProperty{ get; };
+    }
+}

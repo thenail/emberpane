@@ -1,0 +1,8 @@
+namespace EmberPane
+{
+    [default_interface]
+    runtimeclass FlyoutWindow : Microsoft.UI.Xaml.Window
+    {
+        FlyoutWindow();
+    }
+}

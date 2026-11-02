@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Inställningar</value>
+  </data>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Inställningar</value>
+  </data>
+  <data name="ArrangeCard.Header" xml:space="preserve">
+    <value>Ordna fönster</value>
+  </data>
+  <data name="ArrangeCard.Description" xml:space="preserve">
+    <value>Placera öppna fönster sida vid sida med en liten marginal runt varje.</value>
+  </data>
+  <data name="ArrangeEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Ordna fönster</value>
+  </data>
+  <data name="StartCard.Header" xml:space="preserve">
+    <value>Starta med Windows</value>
+  </data>
+  <data name="StartCard.Description" xml:space="preserve">
+    <value>Starta Ember Pane när du loggar in.</value>
+  </data>
+  <data name="RunAtLogin.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Starta med Windows</value>
+  </data>
+  <data name="QuitCard.Header" xml:space="preserve">
+    <value>Avsluta Ember Pane</value>
+  </data>
+  <data name="QuitCard.Description" xml:space="preserve">
+    <value>Sluta ordna fönster tills Ember Pane startas igen.</value>
+  </data>
+  <data name="QuitButton.Content" xml:space="preserve">
+    <value>Avsluta</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>På</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>Av</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="ActivityResting" xml:space="preserve">
+    <value>Vilar</value>
+  </data>
+  <data name="ActivityLight" xml:space="preserve">
+    <value>Lätt</value>
+  </data>
+  <data name="ActivityWorking" xml:space="preserve">
+    <value>Arbetar</value>
+  </data>
+  <data name="ActivityBusy" xml:space="preserve">
+    <value>Upptagen</value>
+  </data>
+  <data name="ActivityVeryBusy" xml:space="preserve">
+    <value>Mycket upptagen</value>
+  </data>
+  <data name="ActivityFlatOut" xml:space="preserve">
+    <value>För fullt</value>
+  </data>
+  <data name="StepperDecrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Mindre</value>
+  </data>
+  <data name="StepperIncrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Mer</value>
+  </data>
+  <data name="LayoutGroup.Text" xml:space="preserve">
+    <value>Layout</value>
+  </data>
+  <data name="GapCard.Header" xml:space="preserve">
+    <value>Mellanrum mellan fönster</value>
+  </data>
+  <data name="GapCard.Description" xml:space="preserve">
+    <value>Utrymmet mellan ett fönster och nästa.</value>
+  </data>
+  <data name="MarginCard.Header" xml:space="preserve">
+    <value>Utrymme vid skärmkanten</value>
+  </data>
+  <data name="MarginCard.Description" xml:space="preserve">
+    <value>Utrymmet mellan fönstren och skärmens kant.</value>
+  </data>
+  <data name="CornersCard.Header" xml:space="preserve">
+    <value>Hörn</value>
+  </data>
+  <data name="CornersCard.Description" xml:space="preserve">
+    <value>De flesta appar följer detta. Några ritar sina egna hörn.</value>
+  </data>
+  <data name="CornersBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Hörn</value>
+  </data>
+  <data name="CornersRound.Content" xml:space="preserve">
+    <value>Rundade</value>
+  </data>
+  <data name="CornersSmall.Content" xml:space="preserve">
+    <value>Lätt rundade</value>
+  </data>
+  <data name="CornersLeave.Content" xml:space="preserve">
+    <value>Låt dem vara</value>
+  </data>
+  <data name="GapLineCard.Header" xml:space="preserve">
+    <value>Visa en linje mellan fönster</value>
+  </data>
+  <data name="GapLineCard.Description" xml:space="preserve">
+    <value>Vila pekaren mellan två fönster och dra sedan i linjen för att ändra deras storlek.</value>
+  </data>
+  <data name="GapLineEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Visa en linje mellan fönster</value>
+  </data>
+  <data name="BusyGroup.Text" xml:space="preserve">
+    <value>Visa hur upptagna appar är</value>
+  </data>
+  <data name="BusyCard.Header" xml:space="preserve">
+    <value>Färglägg fönsterramar</value>
+  </data>
+  <data name="BusyCard.Description" xml:space="preserve">
+    <value>Varje fönsters ram byter färg efter hur hårt dess app arbetar.</value>
+  </data>
+  <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Färglägg fönsterramar</value>
+  </data>
+  <data name="ReactCard.Header" xml:space="preserve">
+    <value>Färgerna ändras</value>
+  </data>
+  <data name="ReactCard.Description" xml:space="preserve">
+    <value>Långsamt ignorerar korta arbetstoppar. Snabbt visar dem direkt.</value>
+  </data>
+  <data name="ReactBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Färgerna ändras</value>
+  </data>
+  <data name="ReactQuickly.Content" xml:space="preserve">
+    <value>Snabbt</value>
+  </data>
+  <data name="ReactNormally.Content" xml:space="preserve">
+    <value>Normalt</value>
+  </data>
+  <data name="ReactSlowly.Content" xml:space="preserve">
+    <value>Långsamt</value>
+  </data>
+  <data name="ExceptionsGroup.Text" xml:space="preserve">
+    <value>Appar med egen regel</value>
+  </data>
+  <data name="ExceptionsNote.Text" xml:space="preserve">
+    <value>Välj vad som händer med en apps fönster, oavsett vad de andra gör.</value>
+  </data>
+  <data name="NoRules.Text" xml:space="preserve">
+    <value>Inga appar har en egen regel ännu.</value>
+  </data>
+  <data name="AddRuleButton.Content" xml:space="preserve">
+    <value>Lägg till en app</value>
+  </data>
+  <data name="NoAppsToAdd" xml:space="preserve">
+    <value>Inga andra appar är öppna</value>
+  </data>
+  <data name="RemoveRule" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+  <data name="ModeArrange" xml:space="preserve">
+    <value>Ordna den</value>
+  </data>
+  <data name="ModeLeaveWhere" xml:space="preserve">
+    <value>Låt den vara där jag la den</value>
+  </data>
+  <data name="ModeLeaveAlone" xml:space="preserve">
+    <value>Låt den vara</value>
+  </data>
+  <data name="SizeNone" xml:space="preserve">
+    <value>Inget</value>
+  </data>
+  <data name="SizeSmall" xml:space="preserve">
+    <value>Litet</value>
+  </data>
+  <data name="SizeMedium" xml:space="preserve">
+    <value>Medel</value>
+  </data>
+  <data name="SizeLarge" xml:space="preserve">
+    <value>Stort</value>
+  </data>
+  <data name="LayoutOneAtATime" xml:space="preserve">
+    <value>En i taget</value>
+  </data>
+  <data name="LayoutTwoColumns" xml:space="preserve">
+    <value>Två kolumner</value>
+  </data>
+  <data name="LayoutThreeColumns" xml:space="preserve">
+    <value>Tre kolumner</value>
+  </data>
+  <data name="LayoutLargeAndSmall" xml:space="preserve">
+    <value>Stor och liten</value>
+  </data>
+  <data name="LayoutLargeAndTwoSmall" xml:space="preserve">
+    <value>Stor och två små</value>
+  </data>
+  <data name="LayoutFourAreas" xml:space="preserve">
+    <value>Fyra områden</value>
+  </data>
+</root>

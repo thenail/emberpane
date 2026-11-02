@@ -1,0 +1,11 @@
+namespace EmberPane
+{
+    [default_interface]
+    runtimeclass SettingsWindow : Microsoft.UI.Xaml.Window
+    {
+        SettingsWindow();
+
+        /// Brings the window back to the front, un-minimising it first.
+        void RestoreAndActivate();
+    }
+}

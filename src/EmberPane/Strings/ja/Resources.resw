@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="FlyoutSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="ArrangeCard.Header" xml:space="preserve">
+    <value>ウィンドウを整列</value>
+  </data>
+  <data name="ArrangeCard.Description" xml:space="preserve">
+    <value>開いているウィンドウを、周囲に少し余白を取って並べます。</value>
+  </data>
+  <data name="ArrangeEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>ウィンドウを整列</value>
+  </data>
+  <data name="StartCard.Header" xml:space="preserve">
+    <value>Windows と同時に起動</value>
+  </data>
+  <data name="StartCard.Description" xml:space="preserve">
+    <value>サインイン時に Ember Pane を起動します。</value>
+  </data>
+  <data name="RunAtLogin.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Windows と同時に起動</value>
+  </data>
+  <data name="QuitCard.Header" xml:space="preserve">
+    <value>Ember Pane を終了</value>
+  </data>
+  <data name="QuitCard.Description" xml:space="preserve">
+    <value>Ember Pane を再び起動するまで、ウィンドウの整列を停止します。</value>
+  </data>
+  <data name="QuitButton.Content" xml:space="preserve">
+    <value>終了</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>オン</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>オフ</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>バージョン {0}</value>
+  </data>
+  <data name="ActivityResting" xml:space="preserve">
+    <value>休止中</value>
+  </data>
+  <data name="ActivityLight" xml:space="preserve">
+    <value>軽い</value>
+  </data>
+  <data name="ActivityWorking" xml:space="preserve">
+    <value>作業中</value>
+  </data>
+  <data name="ActivityBusy" xml:space="preserve">
+    <value>忙しい</value>
+  </data>
+  <data name="ActivityVeryBusy" xml:space="preserve">
+    <value>とても忙しい</value>
+  </data>
+  <data name="ActivityFlatOut" xml:space="preserve">
+    <value>全力</value>
+  </data>
+  <data name="StepperDecrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>減らす</value>
+  </data>
+  <data name="StepperIncrease.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>増やす</value>
+  </data>
+  <data name="LayoutGroup.Text" xml:space="preserve">
+    <value>レイアウト</value>
+  </data>
+  <data name="GapCard.Header" xml:space="preserve">
+    <value>ウィンドウの間隔</value>
+  </data>
+  <data name="GapCard.Description" xml:space="preserve">
+    <value>ウィンドウとウィンドウの間のスペースです。</value>
+  </data>
+  <data name="MarginCard.Header" xml:space="preserve">
+    <value>画面の端のスペース</value>
+  </data>
+  <data name="MarginCard.Description" xml:space="preserve">
+    <value>ウィンドウと画面の端の間のスペースです。</value>
+  </data>
+  <data name="CornersCard.Header" xml:space="preserve">
+    <value>角</value>
+  </data>
+  <data name="CornersCard.Description" xml:space="preserve">
+    <value>ほとんどのアプリはこの設定に従います。独自の角を描くアプリもあります。</value>
+  </data>
+  <data name="CornersBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>角</value>
+  </data>
+  <data name="CornersRound.Content" xml:space="preserve">
+    <value>丸く</value>
+  </data>
+  <data name="CornersSmall.Content" xml:space="preserve">
+    <value>少し丸く</value>
+  </data>
+  <data name="CornersLeave.Content" xml:space="preserve">
+    <value>変更しない</value>
+  </data>
+  <data name="GapLineCard.Header" xml:space="preserve">
+    <value>ウィンドウの間に線を表示</value>
+  </data>
+  <data name="GapLineCard.Description" xml:space="preserve">
+    <value>2 つのウィンドウの間にポインターを置き、線をドラッグしてサイズを変更します。</value>
+  </data>
+  <data name="GapLineEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>ウィンドウの間に線を表示</value>
+  </data>
+  <data name="BusyGroup.Text" xml:space="preserve">
+    <value>アプリの忙しさを表示</value>
+  </data>
+  <data name="BusyCard.Header" xml:space="preserve">
+    <value>ウィンドウの枠に色を付ける</value>
+  </data>
+  <data name="BusyCard.Description" xml:space="preserve">
+    <value>アプリの作業量に応じて、各ウィンドウの枠の色が変わります。</value>
+  </data>
+  <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>ウィンドウの枠に色を付ける</value>
+  </data>
+  <data name="ReactCard.Header" xml:space="preserve">
+    <value>色の変化</value>
+  </data>
+  <data name="ReactCard.Description" xml:space="preserve">
+    <value>遅いと短い作業は無視されます。速いとすぐに表示されます。</value>
+  </data>
+  <data name="ReactBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>色の変化</value>
+  </data>
+  <data name="ReactQuickly.Content" xml:space="preserve">
+    <value>速い</value>
+  </data>
+  <data name="ReactNormally.Content" xml:space="preserve">
+    <value>標準</value>
+  </data>
+  <data name="ReactSlowly.Content" xml:space="preserve">
+    <value>遅い</value>
+  </data>
+  <data name="ExceptionsGroup.Text" xml:space="preserve">
+    <value>個別のルールがあるアプリ</value>
+  </data>
+  <data name="ExceptionsNote.Text" xml:space="preserve">
+    <value>他のウィンドウに関係なく、アプリのウィンドウの扱いを選びます。</value>
+  </data>
+  <data name="NoRules.Text" xml:space="preserve">
+    <value>個別のルールがあるアプリはまだありません。</value>
+  </data>
+  <data name="AddRuleButton.Content" xml:space="preserve">
+    <value>アプリを追加</value>
+  </data>
+  <data name="NoAppsToAdd" xml:space="preserve">
+    <value>他に開いているアプリはありません</value>
+  </data>
+  <data name="RemoveRule" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="ModeArrange" xml:space="preserve">
+    <value>整列する</value>
+  </data>
+  <data name="ModeLeaveWhere" xml:space="preserve">
+    <value>置いた場所のままにする</value>
+  </data>
+  <data name="ModeLeaveAlone" xml:space="preserve">
+    <value>そのままにする</value>
+  </data>
+  <data name="SizeNone" xml:space="preserve">
+    <value>なし</value>
+  </data>
+  <data name="SizeSmall" xml:space="preserve">
+    <value>小</value>
+  </data>
+  <data name="SizeMedium" xml:space="preserve">
+    <value>中</value>
+  </data>
+  <data name="SizeLarge" xml:space="preserve">
+    <value>大</value>
+  </data>
+  <data name="LayoutOneAtATime" xml:space="preserve">
+    <value>1 つずつ</value>
+  </data>
+  <data name="LayoutTwoColumns" xml:space="preserve">
+    <value>2 列</value>
+  </data>
+  <data name="LayoutThreeColumns" xml:space="preserve">
+    <value>3 列</value>
+  </data>
+  <data name="LayoutLargeAndSmall" xml:space="preserve">
+    <value>大と小</value>
+  </data>
+  <data name="LayoutLargeAndTwoSmall" xml:space="preserve">
+    <value>大と小 2 つ</value>
+  </data>
+  <data name="LayoutFourAreas" xml:space="preserve">
+    <value>4 分割</value>
+  </data>
+</root>
