@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The Microsoft Store package: the same files the installer and the zip take,
+  packed as an MSIX by build.ps1 -Store, which fills in $Version$ and
+  $Architecture$. See README.md beside this file.
+
+  Identity Name, Publisher and PublisherDisplayName must be exactly the values
+  Partner Center gives the app (Product management > Product identity), or it
+  refuses the upload. Never change them once the app is in the Store.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap desktop rescap">
+
+  <Identity
+    Name="10870thenail.EmberPane"
+    Publisher="CN=29C2969E-723A-4E87-9379-787C2F8BA50C"
+    Version="$Version$"
+    ProcessorArchitecture="$Architecture$" />
+
+  <Properties>
+    <DisplayName>Ember Pane</DisplayName>
+    <PublisherDisplayName>thenail</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+  </Properties>
+
+  <!-- The same floor as the app (WindowsTargetPlatformMinVersion). -->
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <!-- The app's languages (src\EmberPane\Strings). The Store offers the app in
+       these, and lists them on its page. -->
+  <Resources>
+    <Resource Language="en-US" />
+    <Resource Language="da" />
+    <Resource Language="de" />
+    <Resource Language="es" />
+    <Resource Language="fi" />
+    <Resource Language="fr" />
+    <Resource Language="it" />
+    <Resource Language="ja" />
+    <Resource Language="ko" />
+    <Resource Language="nb" />
+    <Resource Language="nl" />
+    <Resource Language="pl" />
+    <Resource Language="pt-BR" />
+    <Resource Language="pt-PT" />
+    <Resource Language="ru" />
+    <Resource Language="sv" />
+    <Resource Language="tr" />
+    <Resource Language="zh-Hans" />
+    <Resource Language="zh-Hant" />
+  </Resources>
+
+  <Applications>
+    <Application Id="EmberPane" Executable="EmberPane.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Ember Pane"
+        Description="Arranges your windows in layouts, and shows how hard each app is working."
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png" />
+
+      <Extensions>
+        <!-- Start with Windows, which a package cannot do through the Run key
+             (Native\Shell.cpp). Off until the user turns it on in Settings, as
+             with everything else here: nothing happens without being asked. -->
+        <desktop:Extension Category="windows.startupTask" Executable="EmberPane.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="EmberPane" Enabled="false" DisplayName="Ember Pane" />
+        </desktop:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

@@ -722,7 +722,7 @@ The same as AstroDimmer unless listed. Same `packages.config`, Visual Studio 202
 | `installer/EmberPane.iss` | `MinVersion=10.0.22000`. New `AppGuid`. `StopApp` first runs `{app}\EmberPane.exe --quit`, waits briefly, and only then uses its existing forced stop, so that frames are reset. |
 | `build.yml` | Keep the build, version check and draft release. Drop the Store artifact. Signing stays off until SignPath is set up. |
 
-winget follows the first stable release, as AstroDimmer's did. The Microsoft Store is not planned for v1.
+winget follows the first stable release, as AstroDimmer's did. The Microsoft Store gets an MSIX of the same build, as AstroDimmer's does: see [packaging/store/README.md](../packaging/store/README.md).
 
 The folder is not yet a git repository. `git init` is the first step of M1.
 

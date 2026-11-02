@@ -4,10 +4,12 @@
 #   .\build.ps1 -Configuration Release -Platform ARM64
 #   .\build.ps1 -Installer           Release, plus the per-user setup exe
 #   .\build.ps1 -Zip                 Release, plus a zip of the app to run without installing
+#   .\build.ps1 -Store               Release, plus an MSIX package for the Microsoft Store
 #
 # Output: build\<Platform>\<Configuration>\EmberPane\EmberPane.exe
 #         build\installer\EmberPane-setup-<version>.exe (x64), EmberPane-setup-ARM64-<version>.exe
 #         build\zip\EmberPane-zip-<version>.zip (x64), EmberPane-zip-ARM64-<version>.zip
+#         build\store\EmberPane-store-<version>.msix (x64), EmberPane-store-ARM64-<version>.msix
 #
 # Needs Visual Studio 2026 with the C++ desktop workload and the Windows App
 # SDK C++ component (Microsoft.VisualStudio.Component.WindowsAppSdkSupport.Cpp).
@@ -17,6 +19,7 @@ param(
     [switch] $SkipTests,
     [switch] $Installer,
     [switch] $Zip,
+    [switch] $Store,
     [switch] $SkipBuild
 )
 
@@ -24,7 +27,7 @@ $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 
 # A Debug build needs the debug CRT, which only developer machines have.
-if ($Installer -or $Zip) { $Configuration = 'Release' }
+if ($Installer -or $Zip -or $Store) { $Configuration = 'Release' }
 
 if (-not $SkipBuild) {
     # C++ projects restore packages.config with nuget.exe; fetch it on first use.
@@ -106,4 +109,35 @@ if ($Zip) {
         }
     }
     finally { $archive.Dispose() }
+}
+
+if ($Store) {
+    # The same files again, with the package manifest and its logos, packed as
+    # an MSIX (see packaging\store\README.md). It is the very build the
+    # installer takes: the app finds out when it runs that it is packaged.
+    $version = (Get-Item (Join-Path $app 'EmberPane.exe')).VersionInfo.FileVersion
+    $name = if ($Platform -eq 'ARM64') { "EmberPane-store-ARM64-$version.msix" } else { "EmberPane-store-$version.msix" }
+    $outDir = Join-Path $root 'build\store'
+    $layout = Join-Path $outDir "layout\$Platform"
+    Remove-Item $layout -Recurse -Force -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory -Force $layout | Out-Null
+
+    Get-AppFiles | ForEach-Object {
+        $target = Join-Path $layout $_.FullName.Substring($app.Length + 1)
+        New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
+        Copy-Item $_.FullName $target
+    }
+    Copy-Item (Join-Path $root 'packaging\store\Images') $layout -Recurse
+
+    # The Store wants a four-part version ending in 0, which ours always is.
+    (Get-Content (Join-Path $root 'packaging\store\Package.appxmanifest') -Raw).
+        Replace('$Version$', $version).Replace('$Architecture$', $Platform.ToLowerInvariant()) |
+        Set-Content (Join-Path $layout 'AppxManifest.xml') -Encoding utf8 -NoNewline
+
+    # makeappx comes with the Windows SDK build tools package the build restores.
+    $makeappx = Get-ChildItem (Join-Path $root 'packages') -Recurse -Filter makeappx.exe |
+        Where-Object { $_.Directory.Name -eq 'x64' } | Select-Object -First 1 -ExpandProperty FullName
+    # It names every file it packs: its output is worth showing only on failure.
+    $output = & $makeappx pack /o /d $layout /p (Join-Path $outDir $name)
+    if ($LASTEXITCODE -ne 0) { $output; exit $LASTEXITCODE }
 }

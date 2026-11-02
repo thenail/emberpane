@@ -6,7 +6,9 @@
 #
 # The installers are the run's "installers" artifact, and zips of the app, to
 # run without installing, its "zips" artifact. For a tag they all go into a
-# draft GitHub release.
+# draft GitHub release. The Microsoft Store packages are its "store" artifact,
+# to upload in Partner Center (packaging/store/README.md): they stay out of the
+# release, since the Store signs them and nothing else can install them.
 name: Build
 
 on:
@@ -70,11 +72,11 @@ jobs:
           wait-for-completion-timeout-in-seconds: 3600
           output-artifact-directory: build
 
-      # After signing, so the zips carry the signed exes too.
-      - name: Make the installers and zips
+      # After signing, so the zips and Store packages carry the signed exes too.
+      - name: Make the installers, zips and Store packages
         run: |
-          .\build.ps1 -Platform x64 -Installer -Zip -SkipBuild
-          .\build.ps1 -Platform ARM64 -Installer -Zip -SkipBuild
+          .\build.ps1 -Platform x64 -Installer -Zip -Store -SkipBuild
+          .\build.ps1 -Platform ARM64 -Installer -Zip -Store -SkipBuild
 
       - name: Upload the installers for signing
         id: unsigned-installers
@@ -110,6 +112,13 @@ jobs:
           path: build/zip/*.zip
           if-no-files-found: error
           # Already compressed.
+          compression-level: 0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store
+          path: build/store/*.msix
+          if-no-files-found: error
           compression-level: 0
 
   release:
