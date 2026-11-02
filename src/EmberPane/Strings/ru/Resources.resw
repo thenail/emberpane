@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Раскрашивать рамки окон</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Цвета</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>Используемые цвета, от лёгкой нагрузки до полной.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Цвета</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Яркая</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Сбалансированная</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Тлеющие угли</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Северное сияние</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Ширина цветной рамки</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>Толщина цвета в пикселях.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Тёмная линия внутри рамки</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>Тёмная линия между окном и цветом, чтобы цвет был заметен на светлых окнах. 0 — без линии.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Прозрачная линия</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>Линия внутри рамки показывает то, что за ней, а не остаётся тёмной.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Прозрачная линия</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Смена цветов</value>
   </data>

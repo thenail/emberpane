@@ -21,6 +21,20 @@ namespace EmberPane::Managed
         auto operator<=>(TreeKey const&) const = default;
     };
 
+    /// A window of the layout, on the desktop being looked at, and not in the
+    /// user's hand.
+    struct ShownWindow
+    {
+        HWND Hwnd{};
+        std::wstring Monitor;
+        Core::Rect Bounds;
+        UINT Dpi{ 96 };
+        int Gap{ 0 };
+
+        /// Another window of its area is in front of it.
+        bool Behind{ false };
+    };
+
     /// Puts windows in the areas of the chosen layout, and keeps them there:
     /// places them, reads them back, learns what they refuse, and follows what
     /// the user drags. Nothing here runs unless arranging is on.
@@ -45,6 +59,15 @@ namespace EmberPane::Managed
 
         /// The display went off or came back. Nothing polls while it is off.
         void SetDisplayOn(bool on);
+
+        /// Front to back within each monitor.
+        std::vector<ShownWindow> OnShow();
+
+        /// A window or a gap is in the user's hand.
+        bool Holding() const;
+
+        /// A window has been told to move.
+        Event<> Moved;
 
     private:
         /// What is known about a window's place.

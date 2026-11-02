@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include "HeatRamp.h"
 #include "Json.h"
 
 namespace EmberPane::Core
@@ -57,6 +58,17 @@ namespace EmberPane::Core
     {
         bool Enabled{ true };
         int WindowSeconds{ 10 };
+
+        ColorTheme Theme{ ColorTheme::Bright };
+
+        /// In real pixels, like the border they stand beside: a frame looks
+        /// thin or thick by the pixel. See FramePlan.h.
+        int ColorPx{ 2 };
+        int InnerPx{ 2 };
+
+        /// The space inside the frame shows what is behind it, rather than
+        /// being a dark line.
+        bool ClearInner{ false };
     };
 
     /// A user's exception. Matches on exe name, case-insensitively, optionally
@@ -81,6 +93,8 @@ namespace EmberPane::Core
     {
         static constexpr int MaxGapDip = 12;
         static constexpr int MaxMarginDip = 32;
+        static constexpr int MaxFrameColorPx = 6;
+        static constexpr int MaxFrameInnerPx = 4;
 
         ArrangeSettings Arrange;
         FrameSettings Frames;

@@ -35,6 +35,9 @@ namespace EmberPane::Managed
         /// It would not move: usually an app running as administrator.
         bool Immovable{ false };
 
+        /// The colour for how hard its app is working, as last sampled.
+        Core::FrameColor Heat;
+
         /// Last border colour written. Empty forces a write, which is how a
         /// restart cleans up after a crash: a colour outlives the process
         /// that set it.

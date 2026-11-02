@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Vensterranden kleuren</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Kleuren</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>De gebruikte kleuren, van lichte belasting tot volle kracht.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Kleuren</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Helder</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Evenwichtig</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Gloed</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Noorderlicht</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Breedte van het gekleurde kader</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>Hoe dik de kleur is, in pixels.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Donkere lijn binnen het kader</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>Een donkere lijn tussen het venster en de kleur, zodat de kleur opvalt op lichte vensters. 0 laat hem weg.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Doorzichtige lijn</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>De lijn binnen het kader toont wat erachter ligt in plaats van donker te zijn.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Doorzichtige lijn</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Kleuren veranderen</value>
   </data>

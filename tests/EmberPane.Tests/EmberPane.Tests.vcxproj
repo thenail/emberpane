@@ -68,6 +68,7 @@
     <ClCompile Include="WindowRulesTests.cpp" />
     <ClCompile Include="CpuMeterTests.cpp" />
     <ClCompile Include="HeatRampTests.cpp" />
+    <ClCompile Include="FramePlanTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\EmberPane.Core\EmberPane.Core.vcxproj">

@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Colorir os contornos das janelas</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Cores</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>As cores utilizadas, de uma carga leve até ao máximo.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Cores</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Vivo</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Equilibrado</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Brasa</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Aurora</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Largura da moldura colorida</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>A espessura da cor, em píxeis.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Linha escura dentro da moldura</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>Uma linha escura entre a janela e a cor, para que a cor se destaque em janelas claras. 0 retira a linha.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Linha transparente</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>A linha dentro da moldura mostra o que está atrás em vez de ser escura.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Linha transparente</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>As cores mudam</value>
   </data>

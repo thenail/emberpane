@@ -70,6 +70,7 @@ namespace EmberPane
 
         // After Start, which it then arranges in the order of the screen.
         m_arranger = std::make_unique<Managed::Arranger>(dispatcher, *m_tracker, m_settings);
+        m_rings = std::make_unique<Managed::FrameRings>(dispatcher, *m_tracker, *m_arranger, m_settings);
 
         m_events->DisplaysChanged = [this]
         {
@@ -176,8 +177,10 @@ namespace EmberPane
 
             // Not known reads as resting: a colour must mean something.
             bool show = m_settings.Frames.Enabled && usage.Known;
-            Managed::FrameService::Paint(window, show ? Core::ColorFor(usage.Rate) : Core::FrameColor{});
+            window.Heat = show ? Core::ColorFor(usage.Rate, m_settings.Frames.Theme) : Core::FrameColor{};
         }
+
+        m_rings->Update();
     }
 
     // ------------------------------------------------------------ tray

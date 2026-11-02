@@ -4,6 +4,7 @@
 #include "Link.h"
 #include "Managed/Arranger.h"
 #include "Managed/CpuSampler.h"
+#include "Managed/FrameRings.h"
 #include "Managed/WindowTracker.h"
 #include "Native/SystemEvents.h"
 #include "Settings.h"
@@ -58,6 +59,7 @@ namespace EmberPane
         std::unique_ptr<Managed::WindowTracker> m_tracker;
         std::unique_ptr<Managed::CpuSampler> m_sampler;
         std::unique_ptr<Managed::Arranger> m_arranger;
+        std::unique_ptr<Managed::FrameRings> m_rings;
 
         winrt::Windows::System::DispatcherQueueTimer m_tick{ nullptr };
         int m_tickCount{ 0 };

@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Colorear los bordes de las ventanas</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Colores</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>Los colores usados, desde una carga ligera hasta el máximo.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Colores</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Vivo</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Equilibrado</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Brasa</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Aurora</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Ancho del marco de color</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>El grosor del color, en píxeles.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Línea oscura dentro del marco</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>Una línea oscura entre la ventana y el color, para que el color destaque en ventanas claras. Con 0 no se muestra.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Línea transparente</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>La línea dentro del marco muestra lo que hay detrás en lugar de ser oscura.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Línea transparente</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Los colores cambian</value>
   </data>

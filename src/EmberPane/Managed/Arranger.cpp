@@ -488,6 +488,60 @@ namespace EmberPane::Managed
         // BeginDeferWindowPos, where one bad window can hold up the batch.
         SetWindowPos(hwnd, nullptr, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
                      SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_ASYNCWINDOWPOS);
+        Moved();
+    }
+
+    std::vector<ShownWindow> Arranger::OnShow()
+    {
+        std::vector<ShownWindow> shown;
+        if (!m_running) return shown;
+
+        auto order = FrontToBack();
+
+        for (auto const& [key, layout] : m_layouts)
+        {
+            auto monitor = MonitorOf(key);
+            if (!monitor || layout.Members.empty()) continue;
+
+            // The layout on the desktop being looked at.
+            if (!m_tracker.IsOnCurrentDesktop(layout.Members.begin()->first)) continue;
+
+            // Never the whole monitor: Windows takes that for a fullscreen app,
+            // even with nothing to see, and lowers the taskbar beneath the
+            // windows, where their shadows fall on it. With an auto-hiding
+            // taskbar the work area is the whole monitor.
+            auto bounds = ToRect(monitor->Work);
+            if (EqualRect(&monitor->Work, &monitor->Bounds))
+                --bounds.Bottom;
+
+            std::set<Core::WindowId> taken;
+            for (auto hwnd : order)
+            {
+                auto member = layout.Members.find(hwnd);
+                if (member == layout.Members.end()) continue;
+
+                auto window = m_tracker.Windows().find(hwnd);
+                if (window == m_tracker.Windows().end()) continue;
+
+                if (m_drag && m_drag->Hwnd == hwnd && m_drag->Moving) continue;
+
+                bool behind = !taken.insert(member->second).second;
+
+                // In front of its area and maximized: it has no frame, and
+                // nothing behind it shows.
+                if (!behind && window->second.State != WindowState::Normal) continue;
+
+                shown.push_back({ hwnd, key.Monitor, bounds, monitor->Dpi,
+                                  DipsToPixels(m_settings.Arrange.GapDip, monitor->Dpi), behind });
+            }
+        }
+
+        return shown;
+    }
+
+    bool Arranger::Holding() const
+    {
+        return m_drag.has_value() || (m_gapHandle && m_gapHandle->Dragging());
     }
 
     void Arranger::ArmSettle(int milliseconds)

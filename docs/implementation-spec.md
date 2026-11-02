@@ -26,7 +26,6 @@ It is built the way [AstroDimmer](../../astrodimmer) is built: C++/WinRT, a smal
 - Fixed positions per app ("Outlook always goes top right").
 - Layouts that survive a reboot.
 - Other layout styles, such as master and stack.
-- A thicker frame (section 9.6).
 
 **Not planned**
 
@@ -40,7 +39,7 @@ It is built the way [AstroDimmer](../../astrodimmer) is built: C++/WinRT, a smal
 | --- | --- | --- |
 | Reaching other apps | Plain Win32 and DWM calls from outside the app | No injection, and no cooperation from the app. Verified in section 3. |
 | Layout | Predefined layouts of one to four areas, each held as a binary split tree, per monitor and virtual desktop | Giving every window its own place made a dozen areas with a dozen windows open. A few areas you chose yourself stay readable. Windows beyond the number of areas share one, in front of each other, and a dragged edge still maps onto one split's ratio. |
-| Frame | The window's own DWM border, `DWMWA_BORDER_COLOR` | Windows draws it, so it follows the window and its corners exactly, with no extra windows, no z-order chasing and no lag. It is thin, and its width cannot be changed. Section 9.6 sets the gate for replacing it. |
+| Frame | The window's own DWM border, `DWMWA_BORDER_COLOR` | Windows draws it, so it follows the window and its corners exactly, with no extra windows, no z-order chasing and no lag. It is thin, and its width cannot be changed, so section 9.6 draws what it cannot, only when asked to. |
 | Corners | `DWMWA_WINDOW_CORNER_PREFERENCE` | Same mechanism, already the Windows 11 look. |
 | CPU measure | CPU-seconds per second over the last 10 s, summed across the app's process family | "How much is it taking" is a current rate. A lifetime total only ever rises, and a long-open idle app would stay red. |
 | Colour scale | Absolute, in cores' worth of CPU time | As a share of the machine, one pegged core reads as 3% on a 32-thread CPU. |
@@ -336,17 +335,26 @@ Activity ActivityFor(double rate);
 | From, in CPU-seconds per second | The word people see | Colour |
 | --- | --- | --- |
 | 0 | Resting | System default border |
-| 0.02 | Light | `#2F80DE` blue |
-| 0.25 | Working | `#0B9287` teal |
-| 1.0 | Busy | `#B28000` amber |
-| 2.0 | Very busy | `#E26600` orange |
-| 4.0 | Flat out | `#DC2F2F` red |
+| 0.02 | Light | Blue |
+| 0.25 | Working | Teal |
+| 1.0 | Busy | Amber |
+| 2.0 | Very busy | Orange |
+| 4.0 | Flat out | Red |
+
+Those are the colours of the default theme. Settings offers four, with the same stops:
+
+| Theme | Light | Working | Busy | Very busy | Flat out |
+| --- | --- | --- | --- | --- | --- |
+| Bright (default) | `#4C9BE8` | `#2EC4B6` | `#F2C12E` | `#F2711C` | `#E03131` |
+| Balanced | `#2F80DE` | `#0B9287` | `#B28000` | `#E26600` | `#DC2F2F` |
+| Ember | `#FFD166` | `#FFB13B` | `#FF8C2E` | `#F2542D` | `#D7263D` |
+| Aurora | `#5EEAD4` | `#38BDF8` | `#818CF8` | `#C084FC` | `#F472B6` |
 
 Interpolate between stops on `log2(rate)`, then quantize to 24 levels. Quantizing means a window's colour changes only when its load really has, so the common tick makes no DWM call. Blue to amber to red avoids relying on telling red from green, and Settings gives each colour its word, so colour is never the only signal. A word changes exactly at its stop, while the colour blends between stops.
 
-A border lies against the window's own content, which may be light or dark and cannot be asked for, so the stops are mid-tones. Every level is at least 3:1 (WCAG's bar for graphics) against white, `#F3F3F3`, `#202020`, `#2B2B2B` and black, and a test pins this. The first colours were brighter: up to 12:1 on black, but 1.5:1 for amber on a light window, where they could hardly be seen.
+A border lies against the window's own content, which may be light or dark and cannot be asked for. Bright reaches 12:1 on black but only 1.5:1 for amber on a light window, where it can hardly be seen on its own. There are two answers. Balanced is all mid-tones: every level is at least 3:1 (WCAG's bar for graphics) against white, `#F3F3F3`, `#202020`, `#2B2B2B` and black. Or the dark line in section 9.6 separates any theme from the window: every level of every theme is at least 3:1 against it. Tests pin both.
 
-The stops are one table in `HeatRamp.cpp`. They are not a user setting in v1.
+The stops and themes are tables in `HeatRamp.cpp`.
 
 ## 8. Host
 
@@ -512,7 +520,7 @@ Uses documented APIs only. `NtQuerySystemInformation` would read everything in o
 - **A process that cannot be read**: the family continues without it. If its root cannot be read, `Known` is false, and the frame and panel say so.
 - **While the display is off**: stop the timer, from `SystemEvents::DisplayPowerChanged`. Clear the ring when it comes back.
 
-Two windows of one app share a family, so they show the same figure and colour. That is correct: the question is what the app is taking.
+Two windows of one app share a family, so they show the same figure and colour: the figure is what the app is taking, not the window. Telling them apart is not possible from outside the app. Measured on 2 November 2026 with VS Code: 8 windows, all owned by one process, each with the same two child windows, one in that process and one in the shared GPU process. Its work runs in 91 processes, with renderers from 0.001 to 0.39 of a core, but nothing links a renderer or an extension host to a window. Guessing, by start time or otherwise, is ruled out: there were 17 renderers for 8 windows, and a colour that names the wrong window is worse than one that names the app. Nor is there a signal to pair them by. A renderer's priority and power state do change, but with 7 of 8 VS Code windows open and most of them covered, 12 of 13 renderers were at normal priority, so being covered does not show. Only a measure of what each window repaints could split the figure, as an estimate.
 
 ### 8.10 FrameService
 
@@ -589,7 +597,7 @@ Left-click toggles the panel; right-click opens Settings, as `TrayIcon` already 
 | --- | --- |
 | General | Arrange windows; Start with Windows; Quit |
 | Layout | Gap between windows, 0 to 12 DIPs (section 8.6 explains the limit); Space at the screen edge, 0 to 32 DIPs; Corners: Rounded, Small, Leave as they are; Show a line between windows on hover |
-| Show how busy apps are | On or off; Colours change: Quickly, Normally, Slowly (5, 10 or 30 seconds); a key showing each colour with its word |
+| Show how busy apps are | On or off; Colours: Bright, Balanced, Ember, Aurora; width of the coloured frame, 1 to 6 px; dark line inside the frame, 0 to 4 px; See-through line, off by default; Colours change: Quickly, Normally, Slowly (5, 10 or 30 seconds); a key showing each colour of the chosen theme with its word |
 | Exceptions | One row per rule: the app, and a choice of Arrange it, Leave it where I put it, or Leave it alone (`Tile`, `Float`, `Ignore`); Add, offering the apps now running |
 
 Version text comes last, as in AstroDimmer.
@@ -610,18 +618,28 @@ Version text comes last, as in AstroDimmer.
 
 Start with `en-US`, and keep every string in `Strings/en-US/Resources.resw` from the first commit. Add AstroDimmer's other 18 languages at M7, once the wording has stopped moving.
 
-### 9.6 The thicker frame: a gate, not a task
+### 9.6 Frame widths and the dark line
 
-DWM's border cannot be widened. If, in M2, 2 px proves too faint to read at a glance, the fallback is an overlay: one click-through, layered, `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE` window around each managed window, drawing a ring in the gap. That is what komorebi's adjustable border does, beside its option for the thin Windows border.
+DWM's border cannot be widened, narrowed or moved, and it is 2 px at 150%. Settings gives two widths in real pixels, default 2 and 2: the colour, and a dark line between it and the window. `Core::PlanFrame` works out the rest, outward from the window's visible edge, with Windows' border lying from `-border` to 0:
 
-It costs a great deal more, which is why it is not the default:
+- With no line and a colour no wider than Windows' border, the border is the frame. Nothing is drawn and nothing watches anything.
+- With a line, the border goes `#1F1F1F` and the colour starts `line` pixels in from the border's inner edge. The defaults at 150% give the whole border, dark, then two pixels of colour just outside it. A line of 1 and a colour of 2 give one dark pixel, then two of colour, covering the border's outer pixel and one pixel beyond. A line wider than the border is drawn past it.
+- The See-through line setting, off by default, turns the border off with `DWMWA_COLOR_NONE` and changes nothing else, so the colour stays where it is. Turned off, the border's strip does not go away: it shows what is behind the window. On real apps it reads the same as the gap; on WinForms test windows it is partly grey. Windows stacked behind have theirs turned off too, or the strip would show them, as a light line round a dark window. A line wider than the border is left empty past it.
+- Each window has half the gap. Past that the colour narrows, and with no room for it at all the border is the frame.
+- Only windows in a layout get more than the border. A floating window has no gap to draw in, and one behind others would have its frame drawn across them.
+- A resting window, and one whose load is unknown, keeps Windows' border.
+- So does a window stacked behind another in a shared area. Windows' default border is partly see-through, so the colour of a window behind showed in the border of the one in front, as a second coloured line with See-through line on. It takes its colour on coming to the front.
 
-- A window to keep positioned per managed window, lagging during drags.
-- Z-order to chase, so that a ring never paints over a window in front.
-- Hiding by hand on minimize, fullscreen and desktop switches, with the ring's radius matched to the window's by hand.
-- Bitmaps or GPU surfaces in a tray process that AstroDimmer keeps at a few megabytes, and that takes care to avoid Direct3D (see the comment in `TrayIcon.cpp`).
+`Managed::FrameRings` decides this for each window, and `FrameLayer` draws it: one click-through, per-pixel-alpha window per monitor, with software Direct2D, as for the drop guide. A trial on 2 November 2026 settled how:
 
-All painting goes through `FrameService::Paint`, so the overlay would replace that one function's body. Do not build an abstraction for it ahead of time.
+- **One layer per monitor, not one window per app.** There is one position to keep instead of a window for each, and hiding on minimize, fullscreen and desktop switches comes down to what is drawn. `Arranger::OnShow` gives the front window of each area on the desktop being looked at, leaving out one being carried.
+- **In front of the windows, not behind.** A window's shadow falls on what is behind it, and took colours down by up to 40%: `#E03131` read as `#7F1C1C`. The layer sits directly in front of the frontmost window of the layout, so windows further forward stay in front of it, and it follows on activation. It must never be placed after a topmost window, or it becomes topmost.
+- **Clicks pass through.** In a gap they land on a window's resize border, or the gap line's handle, as before.
+- **Never the whole monitor.** A window exactly covering a monitor reads as a fullscreen app, even with nothing to see, and within seconds Windows takes the taskbar's topmost status away. It drops behind the windows, and their shadows fall on it. The layer covers the work area, less one pixel where that is the whole monitor, as with an auto-hiding taskbar.
+- **Bursts, not polling.** Frames follow at 30 times a second for half a second after anything moves, and for as long as a window or gap is in the user's hand. Otherwise only the 2 s tick looks. The drawing surface, a monitor's worth of pixels, is let go when things go quiet.
+- A window stays on the virtual desktop it was made on, so a layer left on another desktop is made again on this one.
+
+Not yet known: what a layer in front of the windows does to video and games, and to apps that slow down when they think they are covered. Setting the dark line to 0 takes the layer away.
 
 ### 9.7 The gap line
 
@@ -714,7 +732,7 @@ The folder is not yet a git repository. `git init` is the first step of M1.
 
 | Risk | Consequence | Handling |
 | --- | --- | --- |
-| Some custom-framed apps show no border or corners | The frame is missing on those apps | Chrome passes (section 3). VS Code and Office are still to check. If one fails, it floats without a frame or the overlay in section 9.6 is reconsidered. |
+| Some custom-framed apps show no border or corners | The frame is missing on those apps | Chrome passes (section 3). VS Code and Office are still to check. If one fails, it floats without a frame. |
 | 2 px is too faint | The main visual feature goes unnoticed | The gate in M2 |
 | Apps resist being placed | Flicker | Settling caps retries; stubborn windows float |
 | Windows' own Snap fights the tiling | Two previews for one drag | Settled: docking is off while arranging is on (section 8.6). `Win`+arrow keys are still to check. |
@@ -803,7 +821,7 @@ Each ends with something usable and a check that can fail.
 | --- | --- | --- |
 | M0 | Settle the unknowns in section 3 with small scripts | Every row has an answer on real apps, including one UAC-approved elevated window, and the frame decision is confirmed or changed |
 | M1 | Skeleton: `git init`, the renamed solution, tray, panel, Settings, Core, tests | `.\build.ps1` passes. The icon, panel and Settings work, with nothing to show yet. |
-| M2 | `WindowTracker`, `CpuSampler`, `FrameService`, `--probe-windows`. **Moves nothing.** | Every open window is listed correctly, frames change with real load, and quitting restores them. Decide the frame gate (section 9.6). |
+| M2 | `WindowTracker`, `CpuSampler`, `FrameService`, `--probe-windows`. **Moves nothing.** | Every open window is listed correctly, frames change with real load, and quitting restores them. |
 | M3 | `LayoutTree`, `Arranger`: existing and new windows are placed | Switching on arranges all open windows on one monitor with even gaps, and windows opening, closing and minimizing reflow correctly |
 | M4 | Dragging with the drop preview, the gap line, learned minimums, stubborn windows, immovable windows | Dragging any edge moves its neighbour; the line appears in every gap and drags live, stacked and side by side, beside custom-framed apps too; the preview shows exactly where a dragged window lands, beside a window or in its place, across monitors; Esc cancels; no app can cause an endless fight |
 | M5 | Monitors and virtual desktops | The hand-test table passes on two monitors of different scales, including undock and redock |
@@ -814,7 +832,7 @@ M2 comes before M3 on purpose: frames are harmless and exercise the riskiest cod
 
 ### Where this stands
 
-All seven milestones are built, and the design has since moved to predefined layouts. On 2 November 2026 the Release build passed 103 unit tests and 19 live checks of the layouts, including a real drag. Those checks used throwaway windows and `--only-title`, with every other window compared before and after. Debug builds for x64 and Release builds for x64 and ARM64 compile, and the installer and zip are made.
+All seven milestones are built, and the design has since moved to predefined layouts. On 2 November 2026 the Release build for x64 passed its unit tests, 19 live checks of the layouts including a real drag with the frame layer up, and live checks of the frames reading real pixels. Those checks used throwaway windows and `--only-title`, with every other window compared before and after. The installer and zip are made for x64. The Debug and ARM64 builds predate the frame widths and themes and have not been rebuilt.
 
 Two lessons from getting there:
 

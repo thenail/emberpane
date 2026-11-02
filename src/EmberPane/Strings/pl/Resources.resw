@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Koloruj obramowania okien</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Kolory</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>Używane kolory, od lekkiego obciążenia do pełnego.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Kolory</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Jaskrawy</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Zrównoważony</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Żar</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Zorza</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Szerokość kolorowej ramki</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>Grubość koloru w pikselach.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Ciemna linia wewnątrz ramki</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>Ciemna linia między oknem a kolorem, dzięki której kolor jest dobrze widoczny na jasnych oknach. 0 ją wyłącza.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Przezroczysta linia</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>Linia wewnątrz ramki pokazuje to, co jest pod spodem, zamiast być ciemna.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Przezroczysta linia</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Zmiana kolorów</value>
   </data>

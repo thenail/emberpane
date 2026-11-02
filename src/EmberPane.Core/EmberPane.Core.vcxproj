@@ -79,6 +79,7 @@
     <ClInclude Include="WindowRules.h" />
     <ClInclude Include="CpuMeter.h" />
     <ClInclude Include="HeatRamp.h" />
+    <ClInclude Include="FramePlan.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -92,6 +93,7 @@
     <ClCompile Include="WindowRules.cpp" />
     <ClCompile Include="CpuMeter.cpp" />
     <ClCompile Include="HeatRamp.cpp" />
+    <ClCompile Include="FramePlan.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

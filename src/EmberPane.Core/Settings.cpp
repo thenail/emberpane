@@ -112,6 +112,27 @@ namespace EmberPane::Core
             return L"TwoColumns";
         }
 
+        constexpr std::pair<ColorTheme, wchar_t const*> ThemeNames[] = {
+            { ColorTheme::Bright, L"Bright" },
+            { ColorTheme::Balanced, L"Balanced" },
+            { ColorTheme::Ember, L"Ember" },
+            { ColorTheme::Aurora, L"Aurora" },
+        };
+
+        ColorTheme ParseTheme(std::wstring const& text, ColorTheme fallback)
+        {
+            for (auto const& [theme, name] : ThemeNames)
+                if (text == name) return theme;
+            return fallback;
+        }
+
+        wchar_t const* ToString(ColorTheme value)
+        {
+            for (auto const& [theme, name] : ThemeNames)
+                if (theme == value) return name;
+            return L"Bright";
+        }
+
         std::optional<Disposition> ParseMode(std::wstring const& text)
         {
             if (text == L"Tile") return Disposition::Tile;
@@ -187,6 +208,11 @@ namespace EmberPane::Core
             int seconds = ReadInt(frames, L"WindowSeconds", f.WindowSeconds);
             if (seconds == 5 || seconds == 10 || seconds == 30)
                 f.WindowSeconds = seconds;
+
+            f.Theme = ParseTheme(ReadString(frames, L"Theme"), f.Theme);
+            f.ColorPx = std::clamp(ReadInt(frames, L"ColorPx", f.ColorPx), 1, MaxFrameColorPx);
+            f.InnerPx = std::clamp(ReadInt(frames, L"InnerPx", f.InnerPx), 0, MaxFrameInnerPx);
+            f.ClearInner = ReadBool(frames, L"ClearInner", f.ClearInner);
         }
 
         if (auto rules = root.Find(L"Rules"))
@@ -218,6 +244,10 @@ namespace EmberPane::Core
         auto frames = Json::Value::MakeObject();
         frames.Set(L"Enabled", Frames.Enabled);
         frames.Set(L"WindowSeconds", Frames.WindowSeconds);
+        frames.Set(L"Theme", ToString(Frames.Theme));
+        frames.Set(L"ColorPx", Frames.ColorPx);
+        frames.Set(L"InnerPx", Frames.InnerPx);
+        frames.Set(L"ClearInner", Frames.ClearInner);
 
         auto rules = Json::Value::MakeArray();
         for (auto const& rule : Rules)

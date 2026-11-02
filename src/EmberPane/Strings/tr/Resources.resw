@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Pencere kenarlıklarını renklendir</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Renkler</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>Hafif yükten tam yüke kadar kullanılan renkler.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Renkler</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Canlı</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Dengeli</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Kor</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Kutup Işığı</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Renkli çerçevenin genişliği</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>Rengin piksel olarak kalınlığı.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Çerçevenin içindeki koyu çizgi</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>Pencere ile renk arasında koyu bir çizgi; böylece renk açık pencerelerde öne çıkar. 0 çizgiyi kaldırır.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Saydam çizgi</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>Çerçevenin içindeki çizgi koyu olmak yerine arkasını gösterir.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Saydam çizgi</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Renkler değişir</value>
   </data>

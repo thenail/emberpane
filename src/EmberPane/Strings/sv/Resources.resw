@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Färglägg fönsterramar</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Färger</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>Färgerna som används, från lätt belastning till full kraft.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Färger</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Klar</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Balanserad</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Glöd</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Norrsken</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Bredd på den färgade ramen</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>Hur tjock färgen är, i pixlar.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Mörk linje innanför ramen</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>En mörk linje mellan fönstret och färgen, så att färgen syns tydligt på ljusa fönster. 0 tar bort den.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Genomskinlig linje</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>Linjen innanför ramen visar det som finns bakom i stället för att vara mörk.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Genomskinlig linje</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Färgerna ändras</value>
   </data>

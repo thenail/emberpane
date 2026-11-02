@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>為視窗框線著色</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>色彩</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>從輕度負載到滿載所用的色彩。</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>色彩</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>鮮豔</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>均衡</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>餘燼</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>極光</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>彩色邊框寬度</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>色彩的粗細，以像素為單位。</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>邊框內的深色線條</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>在視窗和色彩之間加一條深色線條，讓色彩在淺色視窗上更醒目。設為 0 時不顯示。</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>透明線條</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>邊框內的線條顯示其後方內容，而不是深色。</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>透明線條</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>色彩變化</value>
   </data>

@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>ウィンドウの枠に色を付ける</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>色</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>軽い負荷から全力まで、使われる色です。</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>色</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>鮮やか</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>バランス</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>残り火</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>オーロラ</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>色付きの枠の幅</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>色の太さ (ピクセル単位)。</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>枠の内側の濃い線</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>ウィンドウと色の間に濃い線を入れて、明るいウィンドウでも色を目立たせます。0 で線なし。</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>透明な線</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>枠の内側の線を濃い色にせず、後ろが見えるようにします。</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>透明な線</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>色の変化</value>
   </data>

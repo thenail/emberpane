@@ -31,6 +31,10 @@ TEST(Arranging_starts_off_and_frames_start_on)
     CHECK(s.Frames.Enabled);
     CHECK_EQ(8, s.Arrange.GapDip);
     CHECK_EQ(10, s.Frames.WindowSeconds);
+    CHECK_EQ(2, s.Frames.ColorPx);
+    CHECK_EQ(2, s.Frames.InnerPx);
+    CHECK(!s.Frames.ClearInner);
+    CHECK(s.Frames.Theme == ColorTheme::Bright);
 }
 
 TEST(Settings_survive_a_round_trip)
@@ -43,6 +47,10 @@ TEST(Settings_survive_a_round_trip)
     s.Arrange.GapLine = false;
     s.Frames.Enabled = false;
     s.Frames.WindowSeconds = 30;
+    s.Frames.Theme = ColorTheme::Aurora;
+    s.Frames.ColorPx = 3;
+    s.Frames.InnerPx = 1;
+    s.Frames.ClearInner = true;
     s.Rules.push_back({ L"calculatorapp.exe", L"", L"", Disposition::Float });
     s.Rules.push_back({ L"app.exe", L"SomeClass", L"Picture", Disposition::Ignore });
 
@@ -55,6 +63,10 @@ TEST(Settings_survive_a_round_trip)
     CHECK(!back.Arrange.GapLine);
     CHECK(!back.Frames.Enabled);
     CHECK_EQ(30, back.Frames.WindowSeconds);
+    CHECK(back.Frames.Theme == ColorTheme::Aurora);
+    CHECK_EQ(3, back.Frames.ColorPx);
+    CHECK_EQ(1, back.Frames.InnerPx);
+    CHECK(back.Frames.ClearInner);
     CHECK(back.Rules == s.Rules);
 }
 
@@ -106,6 +118,19 @@ TEST(A_gap_past_the_limit_is_brought_back_to_it)
     CHECK_EQ(AppSettings::MaxGapDip, Parse(LR"({ "Arrange": { "GapDip": 32 } })").Arrange.GapDip);
     CHECK_EQ(0, Parse(LR"({ "Arrange": { "GapDip": -4 } })").Arrange.GapDip);
     CHECK_EQ(AppSettings::MaxMarginDip, Parse(LR"({ "Arrange": { "MarginDip": 500 } })").Arrange.MarginDip);
+}
+
+TEST(Frame_widths_past_their_limits_are_brought_back)
+{
+    CHECK_EQ(AppSettings::MaxFrameColorPx, Parse(LR"({ "Frames": { "ColorPx": 40 } })").Frames.ColorPx);
+    CHECK_EQ(1, Parse(LR"({ "Frames": { "ColorPx": 0 } })").Frames.ColorPx);
+    CHECK_EQ(AppSettings::MaxFrameInnerPx, Parse(LR"({ "Frames": { "InnerPx": 40 } })").Frames.InnerPx);
+    CHECK_EQ(0, Parse(LR"({ "Frames": { "InnerPx": -1 } })").Frames.InnerPx);
+}
+
+TEST(A_theme_we_do_not_know_keeps_the_default)
+{
+    CHECK(Parse(LR"({ "Frames": { "Theme": "Plaid" } })").Frames.Theme == ColorTheme::Bright);
 }
 
 TEST(A_measuring_window_we_do_not_offer_keeps_the_default)

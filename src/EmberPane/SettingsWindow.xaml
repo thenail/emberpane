@@ -89,6 +89,30 @@
                     </StackPanel>
                 </local:SettingsCard>
 
+                <local:SettingsCard x:Uid="FrameThemeCard" Glyph="&#xE790;">
+                    <ComboBox x:Name="ThemeBox" x:Uid="ThemeBox" MinWidth="180">
+                        <ComboBoxItem x:Uid="ThemeBright" />
+                        <ComboBoxItem x:Uid="ThemeBalanced" />
+                        <ComboBoxItem x:Uid="ThemeEmber" />
+                        <ComboBoxItem x:Uid="ThemeAurora" />
+                    </ComboBox>
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="FrameColorCard" Glyph="&#xE8A9;">
+                    <local:OffsetStepper x:Name="FrameColorStepper" Minimum="1" Maximum="6" Step="1" />
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="FrameInnerCard" Glyph="&#xE81E;">
+                    <local:OffsetStepper x:Name="FrameInnerStepper" Minimum="0" Maximum="4" Step="1" />
+                </local:SettingsCard>
+
+                <local:SettingsCard x:Uid="FrameClearCard" Glyph="&#xE890;">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock x:Name="FrameClearState" VerticalAlignment="Center" />
+                        <ToggleSwitch x:Name="FrameClearEnabled" x:Uid="FrameClearEnabled" OnContent="" OffContent="" MinWidth="0" />
+                    </StackPanel>
+                </local:SettingsCard>
+
                 <local:SettingsCard x:Uid="ReactCard" Glyph="&#xE916;">
                     <ComboBox x:Name="ReactBox" x:Uid="ReactBox" MinWidth="180">
                         <ComboBoxItem x:Uid="ReactQuickly" />

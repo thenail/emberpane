@@ -14,7 +14,7 @@ Ember Pane lives on the taskbar. Pick a layout and it arranges the apps you have
 - **A little space around each.** Choose how much, between windows and at the edge of the screen. Corners stay rounded.
 - **Resize by dragging between windows.** Rest the pointer in the gap and a line appears. Drag it, and the windows on both sides follow.
 - **Move by dragging.** Drag a window by its title bar and the areas appear. Let go over one and the window goes there. It works across monitors.
-- **See what is busy.** A window's border turns from blue through amber to red as its app works harder.
+- **See what is busy.** A window's border turns from blue through amber to red as its app works harder. Pick from four sets of colours in Settings, and choose how wide the frame is. If colours are hard to see on light windows, add a dark line between the window and the colour.
 - **Stays out of the way.** Arranging starts off, so nothing moves until you ask. In Settings, any app can be left where you put it, or left alone. Turn arranging off and every window stays where it is.
 
 Your monitors and virtual desktops each keep their own layout, and unplugging a monitor does not lose its layout.
@@ -38,6 +38,7 @@ Each release also has zips. Extract the whole zip anywhere and run `EmberPane\Em
 
 ## Good to know
 
+- **This is an early version.** It has been used on one monitor with one virtual desktop. More monitors, more virtual desktops, ARM-based PCs and the translations are built, but have not been tried yet. With the dark line or a wider frame, Ember Pane draws a click-through layer over your windows. If a video or game misbehaves, set the dark line to 0 in Settings and please open an issue.
 - **Windows running as administrator can't be arranged.** Windows does not let an ordinary app move them. They stay where you put them.
 - **Some apps have a minimum size.** Ember Pane learns it, and gives that window the room it insists on.
 - **Colours are a guide.** One full processor core reads as *Busy*, whatever size your computer is. Two windows of one app show the same colour, because it is the app that is busy.

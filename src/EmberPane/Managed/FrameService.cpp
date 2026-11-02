@@ -7,6 +7,7 @@ namespace EmberPane::Managed::FrameService
     {
         COLORREF ToColorRef(Core::FrameColor color)
         {
+            if (color.None) return DWMWA_COLOR_NONE;
             return color.UseSystemDefault ? DWMWA_COLOR_DEFAULT : RGB(color.R, color.G, color.B);
         }
 

@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Colorer les bordures des fenêtres</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Couleurs</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>Les couleurs utilisées, d'une charge légère au maximum.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Couleurs</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Vif</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Équilibré</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Braise</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Aurore</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Largeur du cadre coloré</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>L'épaisseur de la couleur, en pixels.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Ligne sombre dans le cadre</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>Une ligne sombre entre la fenêtre et la couleur, pour que la couleur ressorte sur les fenêtres claires. 0 la retire.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Ligne transparente</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>La ligne dans le cadre laisse voir ce qui se trouve derrière au lieu d'être sombre.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Ligne transparente</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Les couleurs changent</value>
   </data>

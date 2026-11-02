@@ -169,6 +169,7 @@
     <ClInclude Include="Native\Monitors.h" />
     <ClInclude Include="Native\WindowDocking.h" />
     <ClInclude Include="Managed\FrameService.h" />
+    <ClInclude Include="Managed\FrameRings.h" />
     <ClInclude Include="Managed\ManagedWindow.h" />
     <ClInclude Include="Managed\Timing.h" />
     <ClInclude Include="Managed\WindowMirror.h" />
@@ -218,6 +219,7 @@
     <ClCompile Include="Native\Monitors.cpp" />
     <ClCompile Include="Native\WindowDocking.cpp" />
     <ClCompile Include="Managed\FrameService.cpp" />
+    <ClCompile Include="Managed\FrameRings.cpp" />
     <ClCompile Include="Managed\WindowMirror.cpp" />
     <ClCompile Include="Managed\WindowTracker.cpp" />
     <ClCompile Include="Native\ProcessTree.cpp" />

@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Väritä ikkunoiden reunat</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Värit</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>Käytetyt värit kevyestä kuormasta täyteen tehoon.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Värit</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Kirkas</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Tasapainoinen</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Hiillos</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Revontulet</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Värillisen kehyksen leveys</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>Värin paksuus pikseleinä.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Tumma viiva kehyksen sisällä</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>Tumma viiva ikkunan ja värin välissä, jotta väri erottuu vaaleissa ikkunoissa. 0 jättää sen pois.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Läpinäkyvä viiva</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>Kehyksen sisällä oleva viiva näyttää taustan sen sijaan, että olisi tumma.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Läpinäkyvä viiva</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Värit vaihtuvat</value>
   </data>

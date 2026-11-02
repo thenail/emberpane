@@ -1,5 +1,6 @@
 #pragma once
 
+#include <d2d1.h>
 #include <optional>
 #include <vector>
 #include "Geometry.h"
@@ -56,6 +57,73 @@ namespace EmberPane::Managed
 
         HWND m_hwnd{};
         std::optional<Scene> m_shown;
+    };
+
+    /// What Windows' border cannot do: frames wider than it, or standing off a
+    /// window with a dark line between. One click-through layer per monitor,
+    /// just in front of the windows of the layout, because a window's shadow
+    /// falls on everything behind it and takes the colour down by up to 40%.
+    /// Clicks land on what is beneath, which in a gap is usually a window's
+    /// resize border.
+    ///
+    /// Per-pixel alpha over a monitor's work area, so it is only drawn when
+    /// what it shows changes, and exists only when a frame needs it. Never over
+    /// the whole monitor; see Arranger::OnShow.
+    class FrameLayer
+    {
+    public:
+        /// A rounded band round a window, Inner to Outer pixels out from its
+        /// visible edge.
+        struct Band
+        {
+            Core::Rect Frame;
+            int Inner{ 0 };
+            int Outer{ 0 };
+            COLORREF Color{};
+            int Radius{ 0 };
+
+            bool operator==(Band const&) const = default;
+        };
+
+        struct Scene
+        {
+            Core::Rect Area;
+            std::vector<Band> Bands;
+
+            bool operator==(Scene const&) const = default;
+        };
+
+        ~FrameLayer();
+
+        FrameLayer() = default;
+        FrameLayer(FrameLayer const&) = delete;
+        FrameLayer& operator=(FrameLayer const&) = delete;
+
+        /// `front` is the frontmost window of the layout, which it goes just
+        /// in front of. Windows further forward stay in front of it.
+        void Show(Scene const& scene, HWND front);
+
+        /// Lets go of the drawing surface, a monitor's worth of pixels, until
+        /// something changes.
+        void Trim();
+
+        HWND Hwnd() const { return m_hwnd; }
+
+    private:
+        void Paint(Scene const& scene);
+        void InFrontOf(HWND front);
+
+        HWND m_hwnd{};
+        std::optional<Scene> m_shown;
+
+        HDC m_dc{};
+        HBITMAP m_bitmap{};
+        HGDIOBJ m_old{};
+        int m_width{ 0 };
+        int m_height{ 0 };
+        winrt::com_ptr<ID2D1Factory> m_factory;
+        winrt::com_ptr<ID2D1DCRenderTarget> m_target;
+        winrt::com_ptr<ID2D1SolidColorBrush> m_brush;
     };
 
     /// The line in the gap between windows, which is also the handle: it

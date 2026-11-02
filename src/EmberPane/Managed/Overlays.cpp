@@ -10,6 +10,7 @@ namespace EmberPane::Managed
         constexpr wchar_t PreviewClass[] = L"EmberPane.DropPreview";
         constexpr wchar_t HandleClass[] = L"EmberPane.GapHandle";
         constexpr wchar_t GuideClass[] = L"EmberPane.DropGuide";
+        constexpr wchar_t FrameClass[] = L"EmberPane.FrameLayer";
 
         /// Without the frosted glass: enough to see, and what is beneath stays
         /// readable.
@@ -251,6 +252,149 @@ namespace EmberPane::Managed
         SelectObject(dc, old);
         DeleteObject(bitmap);
         DeleteDC(dc);
+        ReleaseDC(nullptr, screen);
+    }
+
+    // ------------------------------------------------------------ the frames
+
+    FrameLayer::~FrameLayer()
+    {
+        Trim();
+        if (m_hwnd) DestroyWindow(m_hwnd);
+    }
+
+    void FrameLayer::Show(Scene const& scene, HWND front)
+    {
+        if (m_shown != scene)
+        {
+            if (!m_hwnd)
+            {
+                static ATOM const registered = []
+                {
+                    WNDCLASSEXW wc{ sizeof(wc) };
+                    wc.lpfnWndProc = DefWindowProcW;
+                    wc.hInstance = GetModuleHandleW(nullptr);
+                    wc.lpszClassName = FrameClass;
+                    return RegisterClassExW(&wc);
+                }();
+                (void)registered;
+
+                m_hwnd = CreateWindowExW(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+                                         FrameClass, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr,
+                                         GetModuleHandleW(nullptr), nullptr);
+            }
+
+            Paint(scene);
+            m_shown = scene;
+
+            if (!IsWindowVisible(m_hwnd))
+                ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+        }
+
+        InFrontOf(front);
+    }
+
+    void FrameLayer::InFrontOf(HWND front)
+    {
+        HWND before = GetWindow(front, GW_HWNDPREV);
+        if (before == m_hwnd) return;
+
+        // Put after a topmost window, it would become topmost itself.
+        if (!before || (GetWindowLongPtrW(before, GWL_EXSTYLE) & WS_EX_TOPMOST))
+            before = HWND_TOP;
+
+        SetWindowPos(m_hwnd, before, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+    }
+
+    void FrameLayer::Trim()
+    {
+        m_brush = nullptr;
+        m_target = nullptr;
+        m_factory = nullptr;
+
+        if (m_dc)
+        {
+            SelectObject(m_dc, m_old);
+            DeleteObject(m_bitmap);
+            DeleteDC(m_dc);
+        }
+
+        m_dc = nullptr;
+        m_bitmap = nullptr;
+        m_old = nullptr;
+        m_width = 0;
+        m_height = 0;
+    }
+
+    void FrameLayer::Paint(Scene const& scene)
+    {
+        int width = std::max(1, scene.Area.Width());
+        int height = std::max(1, scene.Area.Height());
+
+        HDC screen = GetDC(nullptr);
+
+        if (!m_target || width != m_width || height != m_height)
+        {
+            Trim();
+
+            BITMAPINFO bmi{};
+            bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
+            bmi.bmiHeader.biWidth = width;
+            bmi.bmiHeader.biHeight = -height; // top-down
+            bmi.bmiHeader.biPlanes = 1;
+            bmi.bmiHeader.biBitCount = 32;
+            bmi.bmiHeader.biCompression = BI_RGB;
+
+            m_dc = CreateCompatibleDC(screen);
+            void* bits = nullptr;
+            m_bitmap = CreateDIBSection(m_dc, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+            m_old = SelectObject(m_dc, m_bitmap);
+
+            // Software, as for the guide and the tray glyph.
+            auto properties = D2D1::RenderTargetProperties(
+                D2D1_RENDER_TARGET_TYPE_SOFTWARE,
+                D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 96.0f, 96.0f);
+
+            RECT bounds{ 0, 0, width, height };
+            if (SUCCEEDED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_factory.put())) &&
+                SUCCEEDED(m_factory->CreateDCRenderTarget(&properties, m_target.put())) &&
+                SUCCEEDED(m_target->BindDC(m_dc, &bounds)))
+            {
+                m_target->CreateSolidColorBrush(D2D1::ColorF(0), m_brush.put());
+            }
+
+            m_width = width;
+            m_height = height;
+        }
+
+        if (m_brush)
+        {
+            m_target->BeginDraw();
+            m_target->Clear(D2D1::ColorF(0, 0, 0, 0));
+
+            for (auto const& band : scene.Bands)
+            {
+                // A stroke is centred on its line. On whole pixels at both
+                // sides, it is as crisp as Windows' own border.
+                auto rect = ToRect(band.Frame, scene.Area);
+                float middle = (band.Inner + band.Outer) / 2.0f;
+                float radius = std::max(0.0f, band.Radius + middle);
+
+                m_brush->SetColor(ToColor(band.Color));
+                m_target->DrawRoundedRectangle({ { rect.left - middle, rect.top - middle, rect.right + middle,
+                                                   rect.bottom + middle }, radius, radius },
+                                               m_brush.get(), static_cast<float>(band.Outer - band.Inner));
+            }
+
+            m_target->EndDraw();
+
+            POINT at{ scene.Area.Left, scene.Area.Top };
+            SIZE extent{ width, height };
+            POINT from{};
+            BLENDFUNCTION blend{ AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+            UpdateLayeredWindow(m_hwnd, screen, &at, &extent, m_dc, &from, 0, &blend, ULW_ALPHA);
+        }
+
         ReleaseDC(nullptr, screen);
     }
 

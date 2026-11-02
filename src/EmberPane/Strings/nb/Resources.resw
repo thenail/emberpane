@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Fargelegg vindusrammer</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Farger</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>Fargene som brukes, fra lett belastning til full kraft.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Farger</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Klar</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Balansert</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Glød</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Nordlys</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Bredde på den fargede rammen</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>Hvor tykk fargen er, i piksler.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Mørk linje innenfor rammen</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>En mørk linje mellom vinduet og fargen, så fargen synes godt på lyse vinduer. 0 utelater den.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>Gjennomsiktig linje</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>Linjen innenfor rammen viser det som er bak, i stedet for å være mørk.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Gjennomsiktig linje</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Fargene skifter</value>
   </data>

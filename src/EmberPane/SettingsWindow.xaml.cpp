@@ -134,10 +134,14 @@ namespace winrt::EmberPane::implementation
         ArrangeEnabled().Toggled(changed);
         GapLineEnabled().Toggled(changed);
         FramesEnabled().Toggled(changed);
+        FrameClearEnabled().Toggled(changed);
         CornersBox().SelectionChanged(changed);
         ReactBox().SelectionChanged(changed);
+        ThemeBox().SelectionChanged(changed);
         GapStepper().ValueChanged(changed);
         MarginStepper().ValueChanged(changed);
+        FrameColorStepper().ValueChanged(changed);
+        FrameInnerStepper().ValueChanged(changed);
 
         AddRuleButton().Click([this](auto&&, auto&&) { OpenAddRule(); });
 
@@ -163,7 +167,6 @@ namespace winrt::EmberPane::implementation
 
         ShowRunAtLoginAsync();
 
-        BuildColourKey();
         Load();
         m_loading = false;
     }
@@ -216,6 +219,7 @@ namespace winrt::EmberPane::implementation
         SetToggle(ArrangeEnabled(), ArrangeEnabledState(), s.Arrange.Enabled);
         SetToggle(GapLineEnabled(), GapLineState(), s.Arrange.GapLine);
         SetToggle(FramesEnabled(), FramesEnabledState(), s.Frames.Enabled);
+        SetToggle(FrameClearEnabled(), FrameClearState(), s.Frames.ClearInner);
 
         GapStepper().Value(s.Arrange.GapDip);
         GapStepper().ValueText(NumberText(s.Arrange.GapDip));
@@ -225,10 +229,19 @@ namespace winrt::EmberPane::implementation
         MarginStepper().CaptionText(SizeWord(s.Arrange.MarginDip, Core::AppSettings::MaxMarginDip));
 
         CornersBox().SelectedIndex(static_cast<int32_t>(s.Arrange.Corners));
+        ThemeBox().SelectedIndex(static_cast<int32_t>(s.Frames.Theme));
+
+        FrameColorStepper().Value(s.Frames.ColorPx);
+        FrameColorStepper().ValueText(NumberText(s.Frames.ColorPx));
+        FrameColorStepper().CaptionText(L"px");
+        FrameInnerStepper().Value(s.Frames.InnerPx);
+        FrameInnerStepper().ValueText(NumberText(s.Frames.InnerPx));
+        FrameInnerStepper().CaptionText(L"px");
 
         auto react = std::find(std::begin(ReactSeconds), std::end(ReactSeconds), s.Frames.WindowSeconds);
         ReactBox().SelectedIndex(react != std::end(ReactSeconds) ? static_cast<int32_t>(react - std::begin(ReactSeconds)) : 1);
 
+        BuildColourKey();
         BuildRules();
 
         m_loading = loading;
@@ -248,6 +261,10 @@ namespace winrt::EmberPane::implementation
         s.Arrange.Corners = static_cast<Core::CornerStyle>(std::max(0, CornersBox().SelectedIndex()));
         s.Frames.Enabled = FramesEnabled().IsOn();
         s.Frames.WindowSeconds = ReactSeconds[std::clamp(ReactBox().SelectedIndex(), 0, 2)];
+        s.Frames.Theme = static_cast<Core::ColorTheme>(std::max(0, ThemeBox().SelectedIndex()));
+        s.Frames.ColorPx = FrameColorStepper().Value();
+        s.Frames.InnerPx = FrameInnerStepper().Value();
+        s.Frames.ClearInner = FrameClearEnabled().IsOn();
 
         services.SaveAndNotify();
     }
@@ -265,6 +282,9 @@ namespace winrt::EmberPane::implementation
             { 1.0, L"ActivityBusy" },    { 2.0, L"ActivityVeryBusy" }, { 4.0, L"ActivityFlatOut" },
         };
 
+        auto theme = Services::Get().Settings.Frames.Theme;
+        ColourKey().Children().Clear();
+
         for (auto const& entry : Entries)
         {
             StackPanel item;
@@ -276,7 +296,7 @@ namespace winrt::EmberPane::implementation
             dot.Height(10);
             dot.VerticalAlignment(VerticalAlignment::Center);
 
-            auto color = Core::ColorFor(entry.Rate);
+            auto color = Core::ColorFor(entry.Rate, theme);
             if (color.UseSystemDefault)
             {
                 dot.StrokeThickness(1);

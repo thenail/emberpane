@@ -153,6 +153,48 @@
   <data name="FramesEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Colour window borders</value>
   </data>
+  <data name="FrameThemeCard.Header" xml:space="preserve">
+    <value>Colours</value>
+  </data>
+  <data name="FrameThemeCard.Description" xml:space="preserve">
+    <value>The colours used, from a light load to flat out.</value>
+  </data>
+  <data name="ThemeBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Colours</value>
+  </data>
+  <data name="ThemeBright.Content" xml:space="preserve">
+    <value>Bright</value>
+  </data>
+  <data name="ThemeBalanced.Content" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="ThemeEmber.Content" xml:space="preserve">
+    <value>Ember</value>
+  </data>
+  <data name="ThemeAurora.Content" xml:space="preserve">
+    <value>Aurora</value>
+  </data>
+  <data name="FrameColorCard.Header" xml:space="preserve">
+    <value>Width of the coloured frame</value>
+  </data>
+  <data name="FrameColorCard.Description" xml:space="preserve">
+    <value>How thick the colour is, in pixels.</value>
+  </data>
+  <data name="FrameInnerCard.Header" xml:space="preserve">
+    <value>Dark line inside the frame</value>
+  </data>
+  <data name="FrameInnerCard.Description" xml:space="preserve">
+    <value>A dark line between the window and the colour, so the colour stands out on light windows. 0 leaves it out.</value>
+  </data>
+  <data name="FrameClearCard.Header" xml:space="preserve">
+    <value>See-through line</value>
+  </data>
+  <data name="FrameClearCard.Description" xml:space="preserve">
+    <value>The line inside the frame shows what is behind it instead of being dark.</value>
+  </data>
+  <data name="FrameClearEnabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>See-through line</value>
+  </data>
   <data name="ReactCard.Header" xml:space="preserve">
     <value>Colours change</value>
   </data>
