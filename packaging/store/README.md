@@ -26,8 +26,38 @@ Store ID **9MXCXN7NR110**; once live, the app's page is `https://apps.microsoft.
    - **Age ratings**: the questionnaire. No user interaction, sharing of location or purchases gives the lowest rating.
    - **Packages**: upload both `.msix` files. Leave the device families at Desktop.
    - **Submission options**: the manifest's `runFullTrust` is a restricted capability and needs a reason. For example: *Ember Pane is a desktop tray app built with WinUI 3 and Win32. It moves and resizes other apps' windows, colours their borders through the Desktop Window Manager, and reads their CPU time. These Win32 APIs run only in a full-trust process.*
-   - **Store listings**: English first, and any of the app's other 18 languages you want. Description, feature list and screenshots can come from the [README](../../README.md). The Store wants at least one screenshot, 1366×768 or larger.
+   - **Store listings**: English first, and any of the app's other 18 languages you want, with the text and screenshots under [Listing](#listing). The Store wants at least one screenshot, 1366×768 or larger.
 4. Submit. Certification usually takes a few days.
+
+## Listing
+
+**Screenshots**, in this order: [Screenshots/arranged.png](Screenshots/arranged.png), then [Screenshots/settings.png](Screenshots/settings.png).
+
+**Short description**
+
+> Arrange your windows in simple layouts, with a coloured frame that shows how hard each app is working.
+
+**Description**
+
+> Ember Pane lives on the taskbar and keeps your windows in order. Pick a layout and it places everything you have open, with a small margin around each window. A thin frame around each window shows how hard its app is working, from blue through amber to red.
+>
+> Nothing moves until you ask. Ember Pane has no account and no tracking, and it never connects to the network.
+
+**Features**
+
+> Six layouts, from one window at a time to four areas
+> Places the apps you already have open, as well as new ones
+> Resize by dragging between windows
+> Move a window by dragging it onto another area
+> Frames that show how busy each app is, with four sets of colours
+> Choose the gap, the margin, the frame width and the corners
+> Keep any app out of the layout
+
+**Keywords**: window manager, tiling, layouts, snap, windows, CPU, taskbar
+
+**Note for certification** (under *Submission options > Notes*)
+
+> Ember Pane is a tray app. It opens from its icon in the notification area, which may be under the arrow at the end of the taskbar. Left-click shows the layouts, and right-click opens Settings. Arranging starts off, and pressing a layout turns it on. While it is on, Windows' Snap is turned off for the session, because Ember Pane handles dragging itself. It is restored when arranging stops.
 
 ## Later versions
 
