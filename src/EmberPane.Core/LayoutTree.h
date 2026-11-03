@@ -96,6 +96,11 @@ namespace EmberPane::Core
         /// since its gap is the unbroken one.
         std::optional<GapHit> GapAt(Pixel point, Rect const& area, int gap, MinimumSizes const& minimums) const;
 
+        /// Near a gap between two areas: in the gap itself, or within `share`
+        /// of either neighbour's length across it. A window let go here is
+        /// left out of the layout. The margin at the area's edge is not.
+        bool NearGap(Pixel point, Rect const& area, int gap, MinimumSizes const& minimums, double share) const;
+
         /// Moves a split directly, for a drag that starts on the gap: position
         /// is where the gap's first edge should go.
         void MoveSplit(SplitId split, int position, Rect const& area, int gap, MinimumSizes const& minimums);

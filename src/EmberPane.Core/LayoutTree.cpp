@@ -417,6 +417,43 @@ namespace EmberPane::Core
         return std::nullopt;
     }
 
+    bool LayoutTree::NearGap(Pixel point, Rect const& area, int gap, MinimumSizes const& minimums, double share) const
+    {
+        Node const* node = m_root.get();
+        Rect rect = area;
+
+        // Down from the root, as GapAt: each split's band reaches into both
+        // of its sides, by a share of that side's own length.
+        while (node && !node->IsLeaf())
+        {
+            auto parts = Divide(*node, rect, gap, minimums);
+            auto axis = node->Direction;
+            int intoFirst = static_cast<int>(std::lround(Along(parts.First, axis) * share));
+            int intoSecond = static_cast<int>(std::lround(Along(parts.Second, axis) * share));
+
+            Rect band = parts.Gap;
+            if (axis == Axis::SideBySide)
+            {
+                band.Left -= intoFirst;
+                band.Right += intoSecond;
+            }
+            else
+            {
+                band.Top -= intoFirst;
+                band.Bottom += intoSecond;
+            }
+            if (band.Contains(point)) return true;
+
+            bool inFirst = parts.First.Contains(point);
+            if (!inFirst && !parts.Second.Contains(point)) return false;
+
+            rect = inFirst ? parts.First : parts.Second;
+            node = inFirst ? node->First.get() : node->Second.get();
+        }
+
+        return false;
+    }
+
     void LayoutTree::MoveSplit(SplitId split, int position, Rect const& area, int gap, MinimumSizes const& minimums)
     {
         auto node = FindSplit(m_root.get(), split);

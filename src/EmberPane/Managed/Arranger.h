@@ -141,6 +141,9 @@ namespace EmberPane::Managed
             bool Moving{ false };
             std::optional<Drop> Landing;
 
+            /// Near a gap between two areas: let go here, it leaves the layout.
+            bool Loosening{ false };
+
             /// A resize the layout follows as it goes: where it last was, and
             /// the areas as they were before it, for Esc or for a drag that
             /// turns out to be a move.
@@ -175,9 +178,16 @@ namespace EmberPane::Managed
         /// area and into another, a window trades places this way.
         void Fill(Layout& layout, Core::WindowId area, std::optional<HWND> except);
 
-        void AddToLayout(HWND hwnd, std::optional<Core::WindowId> area);
+        /// Into the layout of its own monitor, or of `tree` when given.
+        void AddToLayout(HWND hwnd, std::optional<Core::WindowId> area, std::optional<TreeKey> tree = std::nullopt);
         void RemoveFromLayout(HWND hwnd);
         void Float(HWND hwnd);
+
+        /// Dropped near a gap: out of the layout, where the user let it go.
+        void Loosen(HWND hwnd);
+
+        /// Dropped on an area again, after Loosen.
+        void Rejoin(HWND hwnd, Drop const& drop);
 
         /// The preset changed: everything is dealt into the new areas,
         /// frontmost first, so the windows in use are the ones on show.
@@ -207,6 +217,10 @@ namespace EmberPane::Managed
         void WatchDrag();
         void FollowResize(RECT const& now);
         void UndoFollowedResize();
+
+        /// The layout under the cursor, on the dragged window's desktop.
+        std::optional<TreeKey> TreeAt(HWND dragged, Core::Pixel cursor);
+        bool NearGapAt(HWND dragged, Core::Pixel cursor);
         std::optional<Drop> DropAt(HWND dragged, Core::Pixel cursor);
         void ShowGuide(HWND dragged, Core::Pixel cursor);
         void ApplyDrop(HWND dragged, Drop const& drop);
@@ -240,6 +254,10 @@ namespace EmberPane::Managed
 
         /// Minimized windows, and the area to return to.
         std::map<HWND, Core::WindowId> m_returning;
+
+        /// Windows the user dropped near a gap: floating, until dropped on an
+        /// area again. Kept while arranging is off, as their floating is.
+        std::set<HWND> m_loose;
 
         std::set<HWND> m_settling;
         winrt::Windows::System::DispatcherQueueTimer m_settle{ nullptr };

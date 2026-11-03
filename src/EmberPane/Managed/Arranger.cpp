@@ -32,6 +32,10 @@ namespace EmberPane::Managed
 
         constexpr int MinimumTileDip = 120;
 
+        /// How far into each neighbouring area a gap's drop zone reaches, as a
+        /// share of that area's length across the gap: a third.
+        constexpr double LooseShare = 1.0 / 3;
+
         int DipsToPixels(int dips, UINT dpi) { return MulDiv(dips, dpi, 96); }
 
         Core::Rect ToRect(RECT const& r) { return { r.left, r.top, r.right, r.bottom }; }
@@ -305,7 +309,7 @@ namespace EmberPane::Managed
         }
     }
 
-    void Arranger::AddToLayout(HWND hwnd, std::optional<Core::WindowId> area)
+    void Arranger::AddToLayout(HWND hwnd, std::optional<Core::WindowId> area, std::optional<TreeKey> tree)
     {
         auto window = m_tracker.Windows().find(hwnd);
         if (window == m_tracker.Windows().end()) return;
@@ -315,7 +319,7 @@ namespace EmberPane::Managed
             managed.State == WindowState::Minimized || m_placements.contains(hwnd))
             return;
 
-        auto key = KeyFor(hwnd);
+        auto key = tree ? *tree : KeyFor(hwnd);
         if (!MonitorOf(key)) return;
 
         auto& layout = LayoutFor(key);
@@ -356,6 +360,25 @@ namespace EmberPane::Managed
     {
         m_tracker.SetDisposition(hwnd, Core::Disposition::Float);
         RemoveFromLayout(hwnd);
+    }
+
+    void Arranger::Loosen(HWND hwnd)
+    {
+        Trace::Log(L"drag: dropped near a gap - out of the layout");
+        m_loose.insert(hwnd);
+        Float(hwnd);
+    }
+
+    void Arranger::Rejoin(HWND hwnd, Drop const& drop)
+    {
+        Trace::Log(L"drag: dropped on an area - back in the layout");
+        m_loose.erase(hwnd);
+        m_tracker.SetDisposition(hwnd, Core::Disposition::Tile);
+
+        AddToLayout(hwnd, drop.Area, drop.Tree);
+        if (m_placements.contains(hwnd))
+            ArrangeTree(drop.Tree);
+        UpdateGapWatch();
     }
 
     Native::Monitor const* Arranger::MonitorOf(TreeKey const& key) const
@@ -705,6 +728,7 @@ namespace EmberPane::Managed
             m_drag.reset();
         }
 
+        m_loose.erase(hwnd);
         if (!m_running) return;
 
         m_returning.erase(hwnd);
@@ -943,9 +967,10 @@ namespace EmberPane::Managed
 
         Trace::Log(L"drag: started");
 
-        // Floating windows show no preview. The drag still has to be known,
-        // so that a layout being arranged leaves it alone.
-        if (m_placements.contains(hwnd))
+        // Floating windows show no preview, but for those dropped near a gap,
+        // which can be dropped on an area again. The drag still has to be
+        // known, so that a layout being arranged leaves it alone.
+        if (m_placements.contains(hwnd) || m_loose.contains(hwnd))
             m_dragWatch.Start();
     }
 
@@ -980,7 +1005,8 @@ namespace EmberPane::Managed
         POINT cursor{};
         GetCursorPos(&cursor);
 
-        m_drag->Landing = DropAt(m_drag->Hwnd, { cursor.x, cursor.y });
+        m_drag->Loosening = NearGapAt(m_drag->Hwnd, { cursor.x, cursor.y });
+        m_drag->Landing = m_drag->Loosening ? std::nullopt : DropAt(m_drag->Hwnd, { cursor.x, cursor.y });
 
         double started = Trace::NowMs();
         ShowGuide(m_drag->Hwnd, { cursor.x, cursor.y });
@@ -1031,31 +1057,54 @@ namespace EmberPane::Managed
         ArrangeTree(placement->second.Tree);
     }
 
-    std::optional<Arranger::Drop> Arranger::DropAt(HWND dragged, Core::Pixel cursor)
+    std::optional<TreeKey> Arranger::TreeAt(HWND dragged, Core::Pixel cursor)
     {
         auto monitor = MonitorAt(cursor);
-        auto placement = m_placements.find(dragged);
-        if (!monitor || placement == m_placements.end()) return std::nullopt;
+        if (!monitor) return std::nullopt;
 
-        TreeKey key{ monitor->Key, placement->second.Tree.Desktop };
-        auto& layout = LayoutFor(key);
+        // A loose window has no tree of its own to name the desktop.
+        if (auto placement = m_placements.find(dragged); placement != m_placements.end())
+            return TreeKey{ monitor->Key, placement->second.Tree.Desktop };
+        if (m_loose.contains(dragged))
+            return TreeKey{ monitor->Key, m_tracker.DesktopOf(dragged) };
+        return std::nullopt;
+    }
 
-        // In a gap or a margin, the nearest area: a drag always goes somewhere.
+    bool Arranger::NearGapAt(HWND dragged, Core::Pixel cursor)
+    {
+        auto key = TreeAt(dragged, cursor);
+        auto monitor = key ? MonitorOf(*key) : nullptr;
+        if (!monitor) return false;
+
+        auto& layout = LayoutFor(*key);
+        auto space = SpaceOf(*monitor, layout);
+        return layout.Areas.NearGap(cursor, space.Bounds, space.Gap, space.Minimums, LooseShare);
+    }
+
+    std::optional<Arranger::Drop> Arranger::DropAt(HWND dragged, Core::Pixel cursor)
+    {
+        auto key = TreeAt(dragged, cursor);
+        auto monitor = key ? MonitorOf(*key) : nullptr;
+        if (!monitor) return std::nullopt;
+
+        auto& layout = LayoutFor(*key);
+
+        // In a margin, the nearest area. Near a gap, NearGapAt has already
+        // answered: let go there, the window leaves the layout.
         auto space = SpaceOf(*monitor, layout);
         auto tile = layout.Areas.NearestTile(cursor, space.Bounds, space.Gap, space.Minimums);
         if (!tile) return std::nullopt;
 
-        return Drop{ key, tile->Id };
+        return Drop{ *key, tile->Id };
     }
 
     void Arranger::ShowGuide(HWND dragged, Core::Pixel cursor)
     {
-        auto monitor = MonitorAt(cursor);
-        auto placement = m_placements.find(dragged);
-        if (!monitor || placement == m_placements.end()) return;
+        auto key = TreeAt(dragged, cursor);
+        auto monitor = key ? MonitorOf(*key) : nullptr;
+        if (!monitor) return;
 
-        TreeKey key{ monitor->Key, placement->second.Tree.Desktop };
-        auto& layout = LayoutFor(key);
+        auto& layout = LayoutFor(*key);
         auto space = SpaceOf(*monitor, layout);
 
         DropGuide::Scene scene;
@@ -1148,7 +1197,15 @@ namespace EmberPane::Managed
         if (!m_running || !drag || drag->Hwnd != hwnd) return;
 
         Trace::Log(std::wstring(L"drag: ended, moving ") + (drag->Moving ? L"yes" : L"no") + L", landing " +
-                   (drag->Landing ? L"yes" : L"no"));
+                   (drag->Landing ? L"yes" : L"no") + L", loosening " + (drag->Loosening ? L"yes" : L"no"));
+
+        // Loose: it stays where it was let go, unless that was on an area.
+        if (m_loose.contains(hwnd))
+        {
+            if (drag->Moving && drag->Landing && !IsZoomed(hwnd))
+                Rejoin(hwnd, *drag->Landing);
+            return;
+        }
 
         auto found = m_placements.find(hwnd);
         if (found == m_placements.end()) return;
@@ -1186,6 +1243,11 @@ namespace EmberPane::Managed
 
         if (resized)
             ApplyResize(hwnd, placement, now);
+        else if (drag->Loosening)
+        {
+            Loosen(hwnd);
+            return;
+        }
         else if (drag->Landing)
             ApplyDrop(hwnd, *drag->Landing);
 

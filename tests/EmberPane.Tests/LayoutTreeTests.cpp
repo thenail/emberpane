@@ -353,6 +353,52 @@ TEST(A_split_keeps_its_identity_as_it_moves)
     CHECK_EQ(before->Split, after->Split);
 }
 
+TEST(Near_a_gap_reaches_a_share_into_both_sides)
+{
+    auto tree = With({ 1, 2 });
+    auto a = BoundsOf(tree, 1);
+    auto b = BoundsOf(tree, 2);
+    int intoA = a.Width() / 4;
+    int intoB = b.Width() / 4;
+
+    CHECK(tree.NearGap({ a.Right + 2, 500 }, Area, Gap, Minimums(), 0.25));
+    CHECK(tree.NearGap({ a.Right - intoA + 2, 500 }, Area, Gap, Minimums(), 0.25));
+    CHECK(tree.NearGap({ b.Left + intoB - 2, 500 }, Area, Gap, Minimums(), 0.25));
+
+    CHECK(!tree.NearGap({ a.Right - intoA - 2, 500 }, Area, Gap, Minimums(), 0.25));
+    CHECK(!tree.NearGap({ b.Left + intoB + 2, 500 }, Area, Gap, Minimums(), 0.25));
+}
+
+TEST(Near_a_gap_holds_with_no_gap_at_all)
+{
+    LayoutTree tree;
+    CHECK(tree.Insert(1, std::nullopt, Area, 0, Minimums()));
+    CHECK(tree.Insert(2, std::nullopt, Area, 0, Minimums()));
+    auto a = BoundsOf(tree, 1, Minimums(), Area, 0);
+
+    CHECK(tree.NearGap({ a.Right - 10, 500 }, Area, 0, Minimums(), 0.25));
+    CHECK(tree.NearGap({ a.Right + 10, 500 }, Area, 0, Minimums(), 0.25));
+}
+
+TEST(Near_an_inner_gap_counts_too)
+{
+    auto tree = With({ 1, 2, 3 });
+    auto upper = BoundsOf(tree, 2);
+    int x = upper.Left + upper.Width() / 2;
+
+    CHECK(tree.NearGap({ x, upper.Bottom - upper.Height() / 8 }, Area, Gap, Minimums(), 0.25));
+    CHECK(!tree.NearGap({ x, upper.Top + upper.Height() / 8 }, Area, Gap, Minimums(), 0.25));
+}
+
+TEST(The_margin_and_one_area_are_never_near_a_gap)
+{
+    auto tree = With({ 1, 2 });
+    CHECK(!tree.NearGap({ 2, 500 }, Area, Gap, Minimums(), 0.25));
+
+    auto single = With({ 1 });
+    CHECK(!single.NearGap({ Area.Left + Area.Width() / 2, 500 }, Area, Gap, Minimums(), 0.25));
+}
+
 TEST(A_point_in_a_gap_goes_to_the_nearest_tile)
 {
     auto tree = With({ 1, 2 });

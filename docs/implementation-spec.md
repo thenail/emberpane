@@ -473,7 +473,9 @@ Side by side, both windows contribute, and whichever receives the drag, the same
 
 The gap setting therefore stops at 12 DIPs, the widest gap with no dead pixels side by side. The gap line (section 9.7) covers the dead pixels once it has appeared. Raise the limit only if M4 shows the line is reliable, because the first moments of a hover and the case with the line turned off still depend on these figures.
 
-**Dragging a window into place.** While a tiled window is dragged by its title bar, every area of the layout is outlined, and the area under the pointer is frosted, as Snap's preview is. That is all: a drag has one choice to make, which area. In a gap or a margin the nearest area counts, so a drag is never over nothing.
+**Dragging a window into place.** While a tiled window is dragged by its title bar, every area of the layout is outlined, and the area under the pointer is frosted, as Snap's preview is. That is all: a drag has one choice to make, which area, or none. In a margin the nearest area counts.
+
+**Dropping a window out of the layout.** Near a gap between two areas, nothing is frosted. The zone is the gap and a third of each neighbouring area's length across it (`LayoutTree::NearGap`), so it is there even with no gap, and the margin at the screen edge is not part of it. A window let go there leaves the layout and floats where it was dropped, until it closes. Dragged again, it shows the areas like a tiled window: near a gap it goes on floating, and dropped on an area it rejoins the layout there. Windows floating for any other reason, by an app's rule or because they kept moving themselves, are not offered this.
 
 Dropping puts the window in that area, in front of whatever is there. If that leaves the area it came from empty, a window from the area it joined moves over, so with one window in each the two trade places. An area with nothing in it stays empty and can be dropped on.
 
@@ -484,7 +486,7 @@ Dropping puts the window in that area, in front of whatever is there. If that le
 - The preview is one window, like the gap line, with `WS_EX_TRANSPARENT` added so it never catches the mouse. It is frosted glass with rounded corners, as Windows' own Snap shows, directly below the dragged window rather than above it. Create it when first needed and destroy it when the drag ends.
 - The frost comes from `SetWindowCompositionAttribute`, which is undocumented, so it is looked up at run time and the preview falls back to a plain translucent one. The documented acrylic backdrop turns solid on an inactive window, and this window must never be active.
 - Esc cancels, as in any Windows drag: the window returns, `MOVESIZEEND` finds it at `Target`, and the first row of the table above applies.
-- Floating windows show no preview.
+- Floating windows show no preview, but for those dropped out of the layout as above.
 
 **Keeping Windows' Snap out.** Snap answers the same drag: it shows its own preview and takes the window when released. So while arranging is on, `Native/WindowDocking` turns docking off, and turns it back on when arranging goes off and on quit.
 
