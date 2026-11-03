@@ -103,27 +103,40 @@ namespace EmberPane::Managed
         /// in front of. Windows further forward stay in front of it.
         void Show(Scene const& scene, HWND front);
 
+        /// Out of sight, keeping what it shows for when it is shown again.
+        void Hide();
+
         /// Lets go of the drawing surface, a monitor's worth of pixels, until
         /// something changes.
         void Trim();
+
+        /// Takes the drawing surface back, if it was let go, ahead of changes.
+        void Warm();
 
         HWND Hwnd() const { return m_hwnd; }
 
     private:
         void Paint(Scene const& scene);
+
+        /// Draws one rectangle of the layer into the surface.
+        void DrawPart(Scene const& scene, RECT const& part);
         void InFrontOf(HWND front);
+
+        /// The parts of the layer to redraw, or none for all of it.
+        static std::optional<std::vector<RECT>> Changed(Scene const& was, Scene const& now);
 
         HWND m_hwnd{};
         std::optional<Scene> m_shown;
 
+        /// The surface holds what is shown, so that only changes need drawing.
+        bool m_painted{ false };
+
         HDC m_dc{};
         HBITMAP m_bitmap{};
         HGDIOBJ m_old{};
+        BYTE* m_bits{};
         int m_width{ 0 };
         int m_height{ 0 };
-        winrt::com_ptr<ID2D1Factory> m_factory;
-        winrt::com_ptr<ID2D1DCRenderTarget> m_target;
-        winrt::com_ptr<ID2D1SolidColorBrush> m_brush;
     };
 
     /// The line in the gap between windows, which is also the handle: it

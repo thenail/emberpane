@@ -66,6 +66,10 @@ namespace EmberPane::Managed
         /// A window or a gap is in the user's hand.
         bool Holding() const;
 
+        /// The layout's areas are changing under the user's hand: a window's
+        /// edge or a gap is being dragged, and the windows follow it.
+        bool Resizing() const;
+
         /// A window has been told to move.
         Event<> Moved;
 
@@ -79,6 +83,9 @@ namespace EmberPane::Managed
             RECT Asked{};
             RECT Settled{};
             RECT Before{};
+
+            /// The scale of the monitor it was on when asked.
+            UINT AskedDpi{ 96 };
 
             /// The window has not shown yet what it does: many apps restore
             /// their saved geometry just after showing.
@@ -125,6 +132,12 @@ namespace EmberPane::Managed
             RECT Start{};
             bool Moving{ false };
             std::optional<Drop> Landing;
+
+            /// A resize the layout follows as it goes: where it last was, and
+            /// the areas as they were before it, for Esc or for a drag that
+            /// turns out to be a move.
+            RECT Resized{};
+            std::optional<Core::LayoutTree> AreasBefore;
         };
 
         struct Gap
@@ -184,6 +197,8 @@ namespace EmberPane::Managed
         void MonitorsChanged(std::vector<Native::Monitor> monitors);
 
         void WatchDrag();
+        void FollowResize(RECT const& now);
+        void UndoFollowedResize();
         std::optional<Drop> DropAt(HWND dragged, Core::Pixel cursor);
         void ShowGuide(HWND dragged, Core::Pixel cursor);
         void ApplyDrop(HWND dragged, Drop const& drop);

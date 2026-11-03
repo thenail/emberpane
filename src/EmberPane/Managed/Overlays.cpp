@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Managed/Overlays.h"
 
+#include <array>
 #include <d2d1.h>
 
 namespace EmberPane::Managed
@@ -23,6 +24,9 @@ namespace EmberPane::Managed
         constexpr int LineDip = 3;
 
         constexpr ULONGLONG DragIntervalMs = 33;
+
+        /// Each strip is its own update of the frame layer.
+        constexpr size_t MaxDirtyStrips = 24;
 
         /// Frosted glass, by the same route the shell's own surfaces use. It
         /// is undocumented, so it is looked up rather than linked, and if it
@@ -257,6 +261,83 @@ namespace EmberPane::Managed
 
     // ------------------------------------------------------------ the frames
 
+    namespace
+    {
+        /// The pixels a band can touch, in the layer's coordinates, as four
+        /// strips that never overlap: the top and bottom take the corners.
+        std::array<RECT, 4> SidesOf(FrameLayer::Band const& band, Core::Rect const& origin)
+        {
+            // Out past the stroke and its smoothing, and in past the corners.
+            int reach = std::max(band.Outer, 0) + 1;
+            int inward = band.Radius + std::max(-band.Inner, 0) + 1;
+
+            int left = band.Frame.Left - origin.Left;
+            int top = band.Frame.Top - origin.Top;
+            int right = band.Frame.Right - origin.Left;
+            int bottom = band.Frame.Bottom - origin.Top;
+
+            int topEnd = top + inward;
+            int bottomStart = std::max(bottom - inward, topEnd);
+            int leftEnd = left + inward;
+            int rightStart = std::max(right - inward, leftEnd);
+
+            return { RECT{ left - reach, top - reach, right + reach, topEnd },
+                     RECT{ left - reach, bottomStart, right + reach, bottom + reach },
+                     RECT{ left - reach, topEnd, leftEnd, bottomStart },
+                     RECT{ rightStart, topEnd, right + reach, bottomStart } };
+        }
+
+        /// From a point to the edge of a rounded rectangle; negative inside.
+        float RoundedDistance(float x, float y, float left, float top, float right, float bottom, float radius)
+        {
+            float halfWidth = (right - left) / 2;
+            float halfHeight = (bottom - top) / 2;
+            radius = std::max(0.0f, std::min({ radius, halfWidth, halfHeight }));
+
+            float qx = std::abs(x - (left + right) / 2) - (halfWidth - radius);
+            float qy = std::abs(y - (top + bottom) / 2) - (halfHeight - radius);
+            float outside = std::hypot(std::max(qx, 0.0f), std::max(qy, 0.0f));
+            return outside + std::min(std::max(qx, qy), 0.0f) - radius;
+        }
+
+        /// A band, over what is there: the pixels from Inner to Outer out from
+        /// the rounded edge of the window, smoothed over half a pixel each side
+        /// as a stroke would be.
+        void DrawBand(BYTE* bits, size_t stride, FrameLayer::Band const& band, Core::Rect const& origin,
+                      RECT const& area)
+        {
+            float left = static_cast<float>(band.Frame.Left - origin.Left);
+            float top = static_cast<float>(band.Frame.Top - origin.Top);
+            float right = static_cast<float>(band.Frame.Right - origin.Left);
+            float bottom = static_cast<float>(band.Frame.Bottom - origin.Top);
+            float radius = static_cast<float>(band.Radius);
+
+            int blue = GetBValue(band.Color);
+            int green = GetGValue(band.Color);
+            int red = GetRValue(band.Color);
+
+            for (int y = area.top; y < area.bottom; ++y)
+            {
+                BYTE* pixel = bits + y * stride + static_cast<size_t>(area.left) * 4;
+                for (int x = area.left; x < area.right; ++x, pixel += 4)
+                {
+                    float d = RoundedDistance(x + 0.5f, y + 0.5f, left, top, right, bottom, radius);
+                    float coverage = std::clamp(std::min(d - band.Inner, band.Outer - d) + 0.5f, 0.0f, 1.0f);
+                    if (coverage <= 0) continue;
+
+                    // Premultiplied, as the layer is.
+                    int alpha = static_cast<int>(std::lround(coverage * 255));
+                    int keep = 255 - alpha;
+                    pixel[0] = static_cast<BYTE>((blue * alpha + pixel[0] * keep + 127) / 255);
+                    pixel[1] = static_cast<BYTE>((green * alpha + pixel[1] * keep + 127) / 255);
+                    pixel[2] = static_cast<BYTE>((red * alpha + pixel[2] * keep + 127) / 255);
+                    pixel[3] = static_cast<BYTE>(alpha + (pixel[3] * keep + 127) / 255);
+                }
+            }
+        }
+    }
+
+
     FrameLayer::~FrameLayer()
     {
         Trim();
@@ -286,12 +367,19 @@ namespace EmberPane::Managed
 
             Paint(scene);
             m_shown = scene;
-
-            if (!IsWindowVisible(m_hwnd))
-                ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
         }
 
+        // Also after Hide, with the scene unchanged.
+        if (!IsWindowVisible(m_hwnd))
+            ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+
         InFrontOf(front);
+    }
+
+    void FrameLayer::Hide()
+    {
+        if (m_hwnd && IsWindowVisible(m_hwnd))
+            ShowWindow(m_hwnd, SW_HIDE);
     }
 
     void FrameLayer::InFrontOf(HWND front)
@@ -306,12 +394,14 @@ namespace EmberPane::Managed
         SetWindowPos(m_hwnd, before, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
     }
 
+    void FrameLayer::Warm()
+    {
+        if (m_shown && !m_painted)
+            Paint(*m_shown);
+    }
+
     void FrameLayer::Trim()
     {
-        m_brush = nullptr;
-        m_target = nullptr;
-        m_factory = nullptr;
-
         if (m_dc)
         {
             SelectObject(m_dc, m_old);
@@ -322,8 +412,10 @@ namespace EmberPane::Managed
         m_dc = nullptr;
         m_bitmap = nullptr;
         m_old = nullptr;
+        m_bits = nullptr;
         m_width = 0;
         m_height = 0;
+        m_painted = false;
     }
 
     void FrameLayer::Paint(Scene const& scene)
@@ -333,7 +425,7 @@ namespace EmberPane::Managed
 
         HDC screen = GetDC(nullptr);
 
-        if (!m_target || width != m_width || height != m_height)
+        if (!m_bits || width != m_width || height != m_height)
         {
             Trim();
 
@@ -349,53 +441,136 @@ namespace EmberPane::Managed
             void* bits = nullptr;
             m_bitmap = CreateDIBSection(m_dc, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
             m_old = SelectObject(m_dc, m_bitmap);
-
-            // Software, as for the guide and the tray glyph.
-            auto properties = D2D1::RenderTargetProperties(
-                D2D1_RENDER_TARGET_TYPE_SOFTWARE,
-                D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 96.0f, 96.0f);
-
-            RECT bounds{ 0, 0, width, height };
-            if (SUCCEEDED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_factory.put())) &&
-                SUCCEEDED(m_factory->CreateDCRenderTarget(&properties, m_target.put())) &&
-                SUCCEEDED(m_target->BindDC(m_dc, &bounds)))
-            {
-                m_target->CreateSolidColorBrush(D2D1::ColorF(0), m_brush.put());
-            }
+            m_bits = static_cast<BYTE*>(bits);
 
             m_width = width;
             m_height = height;
         }
 
-        if (m_brush)
+        if (m_bits)
         {
-            m_target->BeginDraw();
-            m_target->Clear(D2D1::ColorF(0, 0, 0, 0));
+            // Only what changed, while a window is being resized: the whole
+            // monitor's worth, drawn and handed over on every step, keeps the
+            // frames well behind the windows.
+            auto dirty = m_shown && m_shown->Area == scene.Area && m_painted
+                             ? Changed(*m_shown, scene)
+                             : std::optional<std::vector<RECT>>{};
 
-            for (auto const& band : scene.Bands)
-            {
-                // A stroke is centred on its line. On whole pixels at both
-                // sides, it is as crisp as Windows' own border.
-                auto rect = ToRect(band.Frame, scene.Area);
-                float middle = (band.Inner + band.Outer) / 2.0f;
-                float radius = std::max(0.0f, band.Radius + middle);
-
-                m_brush->SetColor(ToColor(band.Color));
-                m_target->DrawRoundedRectangle({ { rect.left - middle, rect.top - middle, rect.right + middle,
-                                                   rect.bottom + middle }, radius, radius },
-                                               m_brush.get(), static_cast<float>(band.Outer - band.Inner));
-            }
-
-            m_target->EndDraw();
+            if (dirty)
+                for (auto const& strip : *dirty)
+                    DrawPart(scene, strip);
+            else
+                DrawPart(scene, { 0, 0, width, height });
 
             POINT at{ scene.Area.Left, scene.Area.Top };
             SIZE extent{ width, height };
             POINT from{};
             BLENDFUNCTION blend{ AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-            UpdateLayeredWindow(m_hwnd, screen, &at, &extent, m_dc, &from, 0, &blend, ULW_ALPHA);
+
+            UPDATELAYEREDWINDOWINFO info{ sizeof(info) };
+            info.hdcDst = screen;
+            info.pptDst = &at;
+            info.psize = &extent;
+            info.hdcSrc = m_dc;
+            info.pptSrc = &from;
+            info.pblend = &blend;
+            info.dwFlags = ULW_ALPHA;
+
+            if (dirty)
+            {
+                for (auto const& strip : *dirty)
+                {
+                    info.prcDirty = &strip;
+                    UpdateLayeredWindowIndirect(m_hwnd, &info);
+                }
+            }
+            else
+            {
+                UpdateLayeredWindowIndirect(m_hwnd, &info);
+            }
+
+            m_painted = true;
         }
 
         ReleaseDC(nullptr, screen);
+    }
+
+    void FrameLayer::DrawPart(Scene const& scene, RECT const& part)
+    {
+        // Straight into the surface's memory, not with Direct2D: while other
+        // windows are being resized, its software renderer waits on the
+        // graphics system for far longer than the drawing takes.
+        size_t stride = static_cast<size_t>(m_width) * 4;
+
+        GdiFlush();
+        for (int y = part.top; y < part.bottom; ++y)
+            std::memset(m_bits + y * stride + static_cast<size_t>(part.left) * 4, 0,
+                        static_cast<size_t>(part.right - part.left) * 4);
+
+        for (auto const& band : scene.Bands)
+        {
+            for (auto const& side : SidesOf(band, scene.Area))
+            {
+                RECT area{};
+                if (IntersectRect(&area, &side, &part))
+                    DrawBand(m_bits, stride, band, scene.Area, area);
+            }
+        }
+    }
+
+    std::optional<std::vector<RECT>> FrameLayer::Changed(Scene const& was, Scene const& now)
+    {
+        // The bands that came or went. Each is drawn only along its four
+        // sides, and the sides are thin, so only those strips are redrawn.
+        std::vector<Band const*> changed;
+        for (auto const& band : was.Bands)
+            if (std::find(now.Bands.begin(), now.Bands.end(), band) == now.Bands.end())
+                changed.push_back(&band);
+        for (auto const& band : now.Bands)
+            if (std::find(was.Bands.begin(), was.Bands.end(), band) == was.Bands.end())
+                changed.push_back(&band);
+
+        RECT layer{ 0, 0, now.Area.Width(), now.Area.Height() };
+        std::vector<RECT> strips;
+
+        for (auto band : changed)
+        {
+            for (auto const& side : SidesOf(*band, now.Area))
+            {
+                RECT clipped{};
+                if (IntersectRect(&clipped, &side, &layer))
+                    strips.push_back(clipped);
+            }
+        }
+
+        // The same side before and after, a step apart, is one strip.
+        auto area = [](RECT const& r) { return static_cast<long long>(r.right - r.left) * (r.bottom - r.top); };
+        for (bool merged = true; merged;)
+        {
+            merged = false;
+            for (size_t i = 0; i < strips.size() && !merged; ++i)
+            {
+                for (size_t j = i + 1; j < strips.size() && !merged; ++j)
+                {
+                    RECT both{};
+                    UnionRect(&both, &strips[i], &strips[j]);
+                    if (area(both) > area(strips[i]) + area(strips[j])) continue;
+
+                    strips[i] = both;
+                    strips.erase(strips.begin() + j);
+                    merged = true;
+                }
+            }
+        }
+
+        // Past this, all at once is as quick, and one update rather than many.
+        long long total = 0;
+        for (auto const& strip : strips)
+            total += area(strip);
+        if (strips.size() > MaxDirtyStrips || total * 4 > area(layer))
+            return std::nullopt;
+
+        return strips;
     }
 
     // ------------------------------------------------------------ the gap handle

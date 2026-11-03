@@ -2,6 +2,7 @@
 #include "Managed/FrameRings.h"
 #include "FramePlan.h"
 #include "Managed/FrameService.h"
+#include "Trace.h"
 
 using namespace std::chrono_literals;
 
@@ -62,6 +63,16 @@ namespace EmberPane::Managed
 
     void FrameRings::Update()
     {
+        // The frames cannot keep up with windows being resized, and one left
+        // behind looks worse than none. Windows' own borders are left as they
+        // are, and the frames are back once the edge or gap is let go.
+        if (m_arranger.Resizing())
+        {
+            for (auto const& [monitor, layer] : m_layers)
+                layer->Hide();
+            return;
+        }
+
         auto const& frames = m_settings.Frames;
         int roundDip = m_settings.Arrange.Corners == Core::CornerStyle::RoundSmall ? RoundSmallDip : RoundDip;
 
@@ -136,7 +147,7 @@ namespace EmberPane::Managed
             layer->Show(scene, fronts[monitor]);
 
             // Colours change on the tick, far too seldom to keep this for.
-            if (!m_watch.IsRunning())
+            if (!m_following)
                 layer->Trim();
         }
     }
@@ -144,28 +155,68 @@ namespace EmberPane::Managed
     void FrameRings::Follow()
     {
         m_quietAt = GetTickCount64() + FollowMs;
-        if (!m_watch.IsRunning())
+        if (!m_following)
+        {
+            m_following = true;
             m_watch.Start();
+        }
+    }
+
+    void FrameRings::SetHeld(bool held)
+    {
+        if (held == m_held) return;
+        m_held = held;
+
+        // While windows are being resized, the apps redrawing them come first,
+        // and at normal priority the frames get a turn every few hundred
+        // milliseconds, though they need only a few.
+        SetThreadPriority(GetCurrentThread(), held ? THREAD_PRIORITY_ABOVE_NORMAL : THREAD_PRIORITY_NORMAL);
+
+        // Drawn whole now, before anything has moved, so that from here on
+        // only what changes is drawn.
+        if (held)
+            for (auto const& [monitor, layer] : m_layers)
+                layer->Warm();
     }
 
     void FrameRings::OnWatch()
     {
+        SetHeld(m_arranger.Holding());
+
+        double started = Trace::NowMs();
         Update();
+        double took = Trace::NowMs() - started;
 
         if (m_layers.empty())
         {
+            SetHeld(false);
+            m_following = false;
             m_watch.Stop();
             return;
         }
 
-        if (m_arranger.Holding())
+        if (m_held)
         {
+            ++m_heldUpdates;
+            m_heldTotalMs += took;
+            m_heldSlowestMs = std::max(m_heldSlowestMs, took);
             m_quietAt = GetTickCount64() + FollowMs;
             return;
         }
 
+        if (m_heldUpdates > 0)
+        {
+            Trace::Log(L"frames: " + std::to_wstring(m_heldUpdates) + L" updates while held, mean " +
+                       std::to_wstring(std::lround(m_heldTotalMs / m_heldUpdates)) + L" ms, slowest " +
+                       std::to_wstring(std::lround(m_heldSlowestMs)) + L" ms");
+            m_heldUpdates = 0;
+            m_heldTotalMs = 0;
+            m_heldSlowestMs = 0;
+        }
+
         if (GetTickCount64() < m_quietAt) return;
 
+        m_following = false;
         m_watch.Stop();
         for (auto const& [monitor, layer] : m_layers)
             layer->Trim();

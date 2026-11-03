@@ -31,6 +31,7 @@ namespace EmberPane::Managed
         /// Something on screen is changing: frames follow it for a moment.
         void Follow();
         void OnWatch();
+        void SetHeld(bool held);
 
         WindowTracker& m_tracker;
         Arranger& m_arranger;
@@ -40,5 +41,15 @@ namespace EmberPane::Managed
 
         winrt::Windows::System::DispatcherQueueTimer m_watch{ nullptr };
         ULONGLONG m_quietAt{ 0 };
+
+        /// The watch is on. Not the timer's IsRunning, which reads false
+        /// inside its own tick, where the surface would be let go every time.
+        bool m_following{ false };
+
+        /// While a window or gap is held: how the frames kept up.
+        bool m_held{ false };
+        int m_heldUpdates{ 0 };
+        double m_heldTotalMs{ 0 };
+        double m_heldSlowestMs{ 0 };
     };
 }

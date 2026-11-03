@@ -51,6 +51,13 @@ namespace EmberPane::Managed
             return frame;
         }
 
+        UINT DpiOf(HWND hwnd)
+        {
+            UINT dpiX = 96, dpiY = 96;
+            GetDpiForMonitor(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
+            return dpiX;
+        }
+
         std::vector<HWND> FrontToBack()
         {
             std::vector<HWND> windows;
@@ -456,6 +463,7 @@ namespace EmberPane::Managed
                     tile.Right + (now.right - frame.right), tile.Bottom + (now.bottom - frame.bottom) };
 
         placement.Asked = asked;
+        placement.AskedDpi = DpiOf(window.Hwnd);
 
         // Windows never rounds a window it thinks is snapped, and moving one
         // does not clear the mark, which also makes it jump to its old size
@@ -544,6 +552,11 @@ namespace EmberPane::Managed
         return m_drag.has_value() || (m_gapHandle && m_gapHandle->Dragging());
     }
 
+    bool Arranger::Resizing() const
+    {
+        return (m_drag && m_drag->AreasBefore) || (m_gapHandle && m_gapHandle->Dragging());
+    }
+
     void Arranger::ArmSettle(int milliseconds)
     {
         m_settle.Stop();
@@ -553,6 +566,16 @@ namespace EmberPane::Managed
 
     void Arranger::Settle()
     {
+        // While a window or the gap is held, the layout moves under the
+        // windows several times a second, and an app a few requests behind
+        // would read as one that refuses to move. They are judged once it is
+        // let go, against where they were last asked to be.
+        if (Holding())
+        {
+            ArmSettle(SettleMs);
+            return;
+        }
+
         auto settling = std::exchange(m_settling, {});
         std::set<TreeKey> rearrange;
 
@@ -594,6 +617,16 @@ namespace EmberPane::Managed
                 }
                 MoveTo(hwnd, asked);
                 m_settling.insert(hwnd);
+            }
+            else if (DpiOf(hwnd) != placement.AskedDpi)
+            {
+                // The monitor's scale changed under it, as it can for a moment
+                // while a display wakes, and Windows rescaled it. Its size says
+                // nothing about its minimum.
+                if (placement.Retries++ < MaxRetries)
+                    rearrange.insert(placement.Tree);
+                else
+                    placement.Settled = now;
             }
             else if (widthOver > TolerancePx || heightOver > TolerancePx)
             {
@@ -653,6 +686,16 @@ namespace EmberPane::Managed
 
     void Arranger::OnRemoved(HWND hwnd)
     {
+        // Gone in the user's hand: the end of its drag would name a window no
+        // longer known, and the drag would never end.
+        if (m_drag && m_drag->Hwnd == hwnd)
+        {
+            m_dragWatch.Stop();
+            m_preview.Hide();
+            m_guide.Hide();
+            m_drag.reset();
+        }
+
         if (!m_running) return;
 
         m_returning.erase(hwnd);
@@ -805,6 +848,11 @@ namespace EmberPane::Managed
 
         if (!m_running || m_monitors.empty()) return;
 
+        // Minimums are learned in pixels, at the scale of the monitor then.
+        // After a change they may be wrong, so they are learned again.
+        for (auto& [hwnd, placement] : m_placements)
+            placement.Minimum = {};
+
         std::wstring primary = m_monitors.front().Key;
         for (auto const& monitor : m_monitors)
             if (monitor.Primary) primary = monitor.Key;
@@ -881,6 +929,7 @@ namespace EmberPane::Managed
         Dragged drag;
         drag.Hwnd = hwnd;
         GetWindowRect(hwnd, &drag.Start);
+        drag.Resized = drag.Start;
         m_drag = drag;
 
         Trace::Log(L"drag: started");
@@ -908,8 +957,16 @@ namespace EmberPane::Managed
         bool sideways = now.left != start.left && now.right != start.right;
         bool upOrDown = now.top != start.top && now.bottom != start.bottom;
 
+        bool wasMoving = m_drag->Moving;
         m_drag->Moving = m_drag->Moving || sideways || upOrDown;
-        if (!m_drag->Moving) return;
+        if (!m_drag->Moving)
+        {
+            FollowResize(now);
+            return;
+        }
+
+        if (!wasMoving)
+            UndoFollowedResize();
 
         POINT cursor{};
         GetCursorPos(&cursor);
@@ -920,6 +977,49 @@ namespace EmberPane::Managed
         ShowGuide(m_drag->Hwnd, { cursor.x, cursor.y });
         if (double took = Trace::NowMs() - started; took > 50)
             Trace::Log(L"drag: guide took " + std::to_wstring(std::lround(took)) + L" ms");
+    }
+
+    void Arranger::FollowResize(RECT const& now)
+    {
+        if (EqualRect(&now, &m_drag->Resized)) return;
+        m_drag->Resized = now;
+
+        auto placement = m_placements.find(m_drag->Hwnd);
+        if (placement == m_placements.end()) return;
+
+        // Only from its own place: a window that was somewhere else, or not
+        // normal, gives no edges to follow.
+        auto window = m_tracker.Windows().find(m_drag->Hwnd);
+        if (window == m_tracker.Windows().end() || window->second.State != WindowState::Normal ||
+            !Near(m_drag->Start, placement->second.Settled))
+            return;
+
+        auto layout = m_layouts.find(placement->second.Tree);
+        if (layout == m_layouts.end()) return;
+
+        if (!m_drag->AreasBefore)
+            m_drag->AreasBefore = layout->second.Areas;
+
+        // The windows beside it follow the edge as it goes, not once it is
+        // let go. The one being resized is left to the user's hand.
+        ApplyResize(m_drag->Hwnd, placement->second, now);
+        ArrangeTree(placement->second.Tree);
+    }
+
+    void Arranger::UndoFollowedResize()
+    {
+        if (!m_drag || !m_drag->AreasBefore) return;
+
+        auto areas = *std::exchange(m_drag->AreasBefore, std::nullopt);
+
+        auto placement = m_placements.find(m_drag->Hwnd);
+        if (placement == m_placements.end()) return;
+
+        auto layout = m_layouts.find(placement->second.Tree);
+        if (layout == m_layouts.end()) return;
+
+        layout->second.Areas = std::move(areas);
+        ArrangeTree(placement->second.Tree);
     }
 
     std::optional<Arranger::Drop> Arranger::DropAt(HWND dragged, Core::Pixel cursor)
@@ -1048,8 +1148,17 @@ namespace EmberPane::Managed
         if (!GetWindowRect(hwnd, &now)) return;
 
         // Esc returns the window to where it started, and nothing else
-        // happens.
-        if (Near(now, placement.Settled)) return;
+        // happens: what the windows beside it followed is undone.
+        if (Near(now, placement.Settled))
+        {
+            if (drag->AreasBefore)
+                if (auto layout = m_layouts.find(placement.Tree); layout != m_layouts.end())
+                {
+                    layout->second.Areas = std::move(*drag->AreasBefore);
+                    ArrangeTree(placement.Tree);
+                }
+            return;
+        }
 
         // Maximized by dragging to the top of the screen: left alone, and it
         // keeps its area for later.
