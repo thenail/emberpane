@@ -540,7 +540,8 @@ namespace EmberPane::Managed
                 if (!behind && window->second.State != WindowState::Normal) continue;
 
                 shown.push_back({ hwnd, key.Monitor, bounds, monitor->Dpi,
-                                  DipsToPixels(m_settings.Arrange.GapDip, monitor->Dpi), behind });
+                                  DipsToPixels(m_settings.Arrange.GapDip, monitor->Dpi), behind,
+                                  m_settling.contains(hwnd) });
             }
         }
 
@@ -550,6 +551,14 @@ namespace EmberPane::Managed
     bool Arranger::Holding() const
     {
         return m_drag.has_value() || (m_gapHandle && m_gapHandle->Dragging());
+    }
+
+    HWND Arranger::InHand() const
+    {
+        if (!m_drag || !m_drag->Moving) return nullptr;
+        if (HWND preview = m_preview.Hwnd()) return preview;
+        if (HWND guide = m_guide.Hwnd()) return guide;
+        return m_drag->Hwnd;
     }
 
     bool Arranger::Resizing() const
@@ -1061,10 +1070,12 @@ namespace EmberPane::Managed
                 landing = tile.Bounds;
         }
 
-        m_guide.Show(scene);
+        // In the user's hand, then the guide, then the preview: nothing of
+        // ours goes over the window being dragged.
+        m_guide.Show(scene, dragged);
 
         if (landing)
-            m_preview.Show(*landing, dragged);
+            m_preview.Show(*landing, m_guide.Hwnd() ? m_guide.Hwnd() : dragged);
         else
             m_preview.Hide();
     }

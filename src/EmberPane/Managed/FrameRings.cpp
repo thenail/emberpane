@@ -79,6 +79,7 @@ namespace EmberPane::Managed
         std::map<HWND, Core::FramePlan> plans;
         std::map<std::wstring, FrameLayer::Scene> scenes;
         std::map<std::wstring, HWND> fronts;
+        std::map<std::wstring, HWND> firsts;
         std::set<HWND> behind;
 
         if (frames.Enabled)
@@ -91,7 +92,12 @@ namespace EmberPane::Managed
                     continue;
                 }
 
-                fronts.try_emplace(shown.Monitor, shown.Hwnd);
+                // The layer goes just in front of the frontmost window at rest.
+                // One still on its way to its area, just dropped, crosses
+                // the others' frames, and they must stay beneath it.
+                firsts.try_emplace(shown.Monitor, shown.Hwnd);
+                if (!shown.Settling)
+                    fronts.try_emplace(shown.Monitor, shown.Hwnd);
 
                 // Resting, or not known: Windows' own border.
                 auto window = m_tracker.Windows().find(shown.Hwnd);
@@ -140,11 +146,20 @@ namespace EmberPane::Managed
             return !scenes.contains(entry.first) || !m_tracker.IsOnCurrentDesktop(entry.second->Hwnd());
         });
 
+        HWND inHand = m_arranger.InHand();
         for (auto const& [monitor, scene] : scenes)
         {
             auto& layer = m_layers[monitor];
             if (!layer) layer = std::make_unique<FrameLayer>();
-            layer->Show(scene, fronts[monitor]);
+            // Never above a window in the user's hand, whatever else comes
+            // forward meanwhile. With every window still moving, beneath the
+            // frontmost of them.
+            if (inHand)
+                layer->Show(scene, inHand, FrameLayer::Stack::Beneath);
+            else if (auto front = fronts.find(monitor); front != fronts.end())
+                layer->Show(scene, front->second, FrameLayer::Stack::InFront);
+            else
+                layer->Show(scene, firsts[monitor], FrameLayer::Stack::Beneath);
 
             // Colours change on the tick, far too seldom to keep this for.
             if (!m_following)

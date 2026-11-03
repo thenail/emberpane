@@ -33,6 +33,9 @@ namespace EmberPane::Managed
 
         /// Another window of its area is in front of it.
         bool Behind{ false };
+
+        /// Not yet where it was asked to go, as a window just dropped is.
+        bool Settling{ false };
     };
 
     /// Puts windows in the areas of the chosen layout, and keeps them there:
@@ -69,6 +72,11 @@ namespace EmberPane::Managed
         /// The layout's areas are changing under the user's hand: a window's
         /// edge or a gap is being dragged, and the windows follow it.
         bool Resizing() const;
+
+        /// What the frames must stay beneath while a window is moved: the
+        /// lowest of the window itself, the guide just beneath it and the
+        /// preview beneath that. None with nothing being moved.
+        HWND InHand() const;
 
         /// A window has been told to move.
         Event<> Moved;

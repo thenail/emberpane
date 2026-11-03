@@ -87,9 +87,14 @@ namespace EmberPane::Managed
         Hide();
     }
 
-    void DropPreview::Show(Core::Rect const& rect, HWND dragged)
+    void DropPreview::Show(Core::Rect const& rect, HWND above)
     {
-        if (m_shown == rect) return;
+        if (m_shown == rect)
+        {
+            if (GetWindow(above, GW_HWNDNEXT) != m_hwnd)
+                SetWindowPos(m_hwnd, above, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            return;
+        }
 
         if (!m_hwnd)
         {
@@ -115,7 +120,7 @@ namespace EmberPane::Managed
         }
 
         // Below the window in the user's hand, as Snap's preview is.
-        SetWindowPos(m_hwnd, dragged, rect.Left, rect.Top, rect.Width(), rect.Height(),
+        SetWindowPos(m_hwnd, above, rect.Left, rect.Top, rect.Width(), rect.Height(),
                      SWP_NOACTIVATE | SWP_SHOWWINDOW);
         m_shown = rect;
     }
@@ -149,9 +154,16 @@ namespace EmberPane::Managed
         Hide();
     }
 
-    void DropGuide::Show(Scene const& scene)
+    void DropGuide::Show(Scene const& scene, HWND dragged)
     {
-        if (m_shown == scene) return;
+        // Beneath the window in the user's hand, which nothing of ours may
+        // cover, and kept there whatever comes forward meanwhile.
+        if (m_shown == scene)
+        {
+            if (GetWindow(dragged, GW_HWNDNEXT) != m_hwnd)
+                SetWindowPos(m_hwnd, dragged, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            return;
+        }
 
         bool moved = !m_shown || m_shown->Area != scene.Area;
 
@@ -167,8 +179,7 @@ namespace EmberPane::Managed
             }();
             (void)registered;
 
-            m_hwnd = CreateWindowExW(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE |
-                                         WS_EX_TOPMOST,
+            m_hwnd = CreateWindowExW(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
                                      GuideClass, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr,
                                      GetModuleHandleW(nullptr), nullptr);
         }
@@ -176,7 +187,10 @@ namespace EmberPane::Managed
         Paint(scene);
 
         if (moved)
-            PlaceTopmost(m_hwnd, scene.Area, SWP_SHOWWINDOW);
+            SetWindowPos(m_hwnd, dragged, scene.Area.Left, scene.Area.Top, scene.Area.Width(), scene.Area.Height(),
+                         SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        else if (GetWindow(dragged, GW_HWNDNEXT) != m_hwnd)
+            SetWindowPos(m_hwnd, dragged, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
         m_shown = scene;
     }
@@ -344,7 +358,7 @@ namespace EmberPane::Managed
         if (m_hwnd) DestroyWindow(m_hwnd);
     }
 
-    void FrameLayer::Show(Scene const& scene, HWND front)
+    void FrameLayer::Show(Scene const& scene, HWND front, Stack stack)
     {
         if (m_shown != scene)
         {
@@ -373,7 +387,10 @@ namespace EmberPane::Managed
         if (!IsWindowVisible(m_hwnd))
             ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
 
-        InFrontOf(front);
+        if (stack == Stack::InFront)
+            InFrontOf(front);
+        else
+            Beneath(front);
     }
 
     void FrameLayer::Hide()
@@ -392,6 +409,13 @@ namespace EmberPane::Managed
             before = HWND_TOP;
 
         SetWindowPos(m_hwnd, before, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+    }
+
+    void FrameLayer::Beneath(HWND window)
+    {
+        if (GetWindow(window, GW_HWNDNEXT) == m_hwnd) return;
+
+        SetWindowPos(m_hwnd, window, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
     }
 
     void FrameLayer::Warm()

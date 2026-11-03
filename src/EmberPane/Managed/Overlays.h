@@ -20,9 +20,12 @@ namespace EmberPane::Managed
     public:
         ~DropPreview();
 
-        /// Just below the window being dragged, and above everything else.
-        void Show(Core::Rect const& rect, HWND dragged);
+        /// Just below `above`: the guide, itself just below the window being
+        /// dragged.
+        void Show(Core::Rect const& rect, HWND above);
         void Hide();
+
+        HWND Hwnd() const { return m_hwnd; }
 
     private:
         HWND m_hwnd{};
@@ -49,8 +52,11 @@ namespace EmberPane::Managed
 
         ~DropGuide();
 
-        void Show(Scene const& scene);
+        /// Just below the window being dragged.
+        void Show(Scene const& scene, HWND dragged);
         void Hide();
+
+        HWND Hwnd() const { return m_hwnd; }
 
     private:
         void Paint(Scene const& scene);
@@ -99,9 +105,16 @@ namespace EmberPane::Managed
         FrameLayer(FrameLayer const&) = delete;
         FrameLayer& operator=(FrameLayer const&) = delete;
 
-        /// `front` is the frontmost window of the layout, which it goes just
-        /// in front of. Windows further forward stay in front of it.
-        void Show(Scene const& scene, HWND front);
+        enum class Stack
+        {
+            InFront,
+            Beneath,
+        };
+
+        /// `front` is the frontmost window of the layout at rest, which it
+        /// goes just in front of; windows further forward stay in front of it.
+        /// Or beneath, with no window at rest.
+        void Show(Scene const& scene, HWND front, Stack stack);
 
         /// Out of sight, keeping what it shows for when it is shown again.
         void Hide();
@@ -121,6 +134,7 @@ namespace EmberPane::Managed
         /// Draws one rectangle of the layer into the surface.
         void DrawPart(Scene const& scene, RECT const& part);
         void InFrontOf(HWND front);
+        void Beneath(HWND window);
 
         /// The parts of the layer to redraw, or none for all of it.
         static std::optional<std::vector<RECT>> Changed(Scene const& was, Scene const& now);
