@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember Pane</title>
+<meta name="description" content="Ember Pane arranges your windows in simple layouts, with a coloured frame that shows how hard each app is working. A small, free app for Windows 11.">
+<meta property="og:title" content="Ember Pane: your windows in order, their heat at a glance">
+<meta property="og:description" content="Arranges your windows in simple layouts, with a coloured frame that shows how hard each app is working. For Windows 11.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://thenail.github.io/emberpane/">
+<meta property="og:image" content="https://thenail.github.io/emberpane/img/social.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+  :root {
+    --coal: #121316;
+    --ash: #1b1c21;
+    --smoke: #2a2c33;
+    --gold: #ffb13b;
+    --ember: #ff8c2e;
+    --flame: #f2542d;
+
+    /* The frame colours, Bright set, from a light load to flat out */
+    --h-light: #4c9be8;
+    --h-working: #2ec4b6;
+    --h-busy: #f2c12e;
+    --h-verybusy: #f2711c;
+    --h-flatout: #e03131;
+
+    --bg: #f7f5f2;
+    --surface: #ffffff;
+    --ink: #1c1d21;
+    --ink-soft: #5a5d66;
+    --line: #e6e1da;
+    --accent: #c2410c;
+    --accent-ink: #ffffff;
+    --shadow: 0 1px 2px rgba(30, 20, 10, .06), 0 12px 32px rgba(30, 20, 10, .10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121316;
+      --surface: #1b1c21;
+      --ink: #f1efec;
+      --ink-soft: #a9abb3;
+      --line: #2a2c33;
+      --accent: #ff9a4a;
+      --accent-ink: #1c1d21;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 32px rgba(0, 0, 0, .35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Top of page: coals, glowing from below ---------- */
+  .glow {
+    color: #fff;
+    background:
+      radial-gradient(900px 420px at 85% 110%, rgba(242, 84, 45, .50), transparent 70%),
+      radial-gradient(620px 300px at 62% 105%, rgba(255, 177, 59, .28), transparent 70%),
+      linear-gradient(165deg, #0e0f12 0%, #17181c 48%, #2b1a13 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .sparks {
+    position: absolute; inset: 0; pointer-events: none; opacity: .75;
+    background-image:
+      radial-gradient(1.5px 1.5px at 14% 78%, #ffb13b, transparent),
+      radial-gradient(1px 1px at 24% 58%, #ff8c2e, transparent),
+      radial-gradient(1.5px 1.5px at 41% 86%, #ffd166, transparent),
+      radial-gradient(1px 1px at 52% 64%, #ff8c2e, transparent),
+      radial-gradient(1px 1px at 6% 40%, rgba(255,177,59,.7), transparent),
+      radial-gradient(1.5px 1.5px at 66% 92%, #ffb13b, transparent),
+      radial-gradient(1px 1px at 78% 70%, #f2542d, transparent),
+      radial-gradient(1px 1px at 33% 30%, rgba(255,140,46,.6), transparent),
+      radial-gradient(1.5px 1.5px at 92% 52%, #ffd166, transparent);
+    mask-image: linear-gradient(to top, #000 25%, transparent 85%);
+    -webkit-mask-image: linear-gradient(to top, #000 25%, transparent 85%);
+  }
+
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0; position: relative; z-index: 1;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; text-decoration: none; }
+  .brand img { width: 32px; height: 32px; }
+  nav ul { list-style: none; display: flex; gap: 28px; margin: 0; padding: 0; align-items: center; }
+  nav ul a { text-decoration: none; opacity: .85; font-size: 15px; }
+  nav ul a:hover { opacity: 1; }
+  @media (max-width: 720px) { nav ul li.hide-sm { display: none; } }
+
+  .hero {
+    display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center;
+    padding: 56px 0 72px; position: relative; z-index: 1;
+  }
+  .hero h1 {
+    font: 600 clamp(36px, 4.4vw, 50px)/1.1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    letter-spacing: -.02em; margin: 0 0 20px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--gold), var(--ember) 45%, var(--flame));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.lead { font-size: 20px; line-height: 1.55; margin: 0 0 32px; max-width: 30em; color: rgba(255,255,255,.86); }
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 24px; border-radius: 10px; font-weight: 600; font-size: 16px;
+    text-decoration: none; transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: #fff; color: var(--coal); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .btn-ghost { color: #fff; border: 1px solid rgba(255,255,255,.4); }
+  .btn svg { width: 18px; height: 18px; }
+  .fineprint { margin-top: 14px; font-size: 14px; color: rgba(255,255,255,.7); }
+  .fineprint a { color: rgba(255,255,255,.9); text-underline-offset: 3px; }
+  .fineprint a:hover { color: #fff; }
+  .closing .fineprint { margin: 18px auto 0; font-size: 14px; max-width: none; }
+
+  /* ---------- The desk: a small screen of windows in the hero ---------- */
+  .shot { width: 100%; max-width: 600px; justify-self: end; }
+  .toggle {
+    display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; margin-bottom: 14px;
+    background: rgba(255,255,255,.10); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.22);
+  }
+  .toggle button {
+    all: unset; cursor: pointer; font-size: 14px; font-weight: 600; color: #fff;
+    padding: 6px 14px; border-radius: 999px; display: inline-flex; gap: 7px; align-items: center;
+  }
+  .toggle button svg { width: 16px; height: 12px; flex: none; }
+  .toggle button[aria-pressed="true"] { background: #fff; color: var(--coal); }
+  .toggle button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  @media (max-width: 520px) { .toggle button span { display: none; } .toggle button { padding: 6px 12px; } }
+
+  .desk {
+    position: relative; aspect-ratio: 16 / 10; border-radius: 14px; overflow: hidden;
+    container-type: inline-size;
+    background:
+      radial-gradient(70% 60% at 80% 100%, rgba(242, 84, 45, .35), transparent 70%),
+      linear-gradient(160deg, #23252c, #16171b);
+    border: 1px solid rgba(255,255,255,.10);
+    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  }
+  .work { position: absolute; inset: 1cqw 1cqw calc(6.4% + 1cqw) 1cqw; }
+  .slot {
+    position: absolute;
+    left: calc(var(--x) * 100%); top: calc(var(--y) * 100%);
+    width: calc(var(--w) * 100%); height: calc(var(--h) * 100%);
+    transition: left .7s cubic-bezier(.3,.7,.2,1), top .7s cubic-bezier(.3,.7,.2,1),
+                width .7s cubic-bezier(.3,.7,.2,1), height .7s cubic-bezier(.3,.7,.2,1);
+  }
+  .win {
+    position: absolute; inset: .8cqw; border-radius: 1.1cqw; overflow: hidden;
+    border: .36cqw solid var(--rest);
+    transition: border-color .9s ease;
+    display: flex; flex-direction: column;
+  }
+  .win.light { background: #f6f6f6; color: #1c1c1c; --rest: rgba(0,0,0,.16); }
+  .win.dark { background: #202020; color: #f2f2f2; --rest: rgba(255,255,255,.14); }
+  .win[data-level="1"] { border-color: var(--h-light); }
+  .win[data-level="2"] { border-color: var(--h-working); }
+  .win[data-level="3"] { border-color: var(--h-busy); }
+  .win[data-level="4"] { border-color: var(--h-verybusy); }
+  .win[data-level="5"] { border-color: var(--h-flatout); }
+  .win .bar {
+    display: flex; align-items: center; justify-content: space-between; flex: none;
+    height: 4.2cqw; padding: 0 1.4cqw; font-size: 1.5cqw; opacity: .7;
+  }
+  .win .bar i { font-style: normal; letter-spacing: 1.4cqw; font-size: 1.3cqw; }
+  .win .body { padding: .6cqw 2cqw 2cqw; min-width: 0; }
+  .win b { display: block; font-size: 2.5cqw; font-weight: 600; white-space: nowrap; }
+  .win small { display: block; font-size: 1.7cqw; opacity: .7; white-space: nowrap; margin-top: .3cqw; }
+  .win .state { display: inline-flex; align-items: center; gap: .8cqw; margin-top: 1.4cqw; font-size: 1.7cqw; font-weight: 600; white-space: nowrap; }
+  .win .state::before {
+    content: ""; width: 1.3cqw; height: 1.3cqw; border-radius: 50%;
+    background: var(--dot, transparent); box-shadow: inset 0 0 0 .2cqw var(--rest);
+    transition: background .9s ease;
+  }
+  .win[data-level="1"] .state::before { --dot: var(--h-light); box-shadow: none; }
+  .win[data-level="2"] .state::before { --dot: var(--h-working); box-shadow: none; }
+  .win[data-level="3"] .state::before { --dot: var(--h-busy); box-shadow: none; }
+  .win[data-level="4"] .state::before { --dot: var(--h-verybusy); box-shadow: none; }
+  .win[data-level="5"] .state::before { --dot: var(--h-flatout); box-shadow: none; }
+
+  .taskbar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 6.4%;
+    background: rgba(30, 31, 36, .92); border-top: 1px solid rgba(255,255,255,.07);
+    display: flex; align-items: center; justify-content: center; gap: 1.2cqw;
+  }
+  .taskbar span { width: 2.4cqw; height: 2.4cqw; border-radius: .5cqw; background: rgba(255,255,255,.16); }
+  .taskbar span:first-child { background: linear-gradient(135deg, #5aa7ff, #2f6fd6); }
+  .taskbar img { position: absolute; right: 2.2cqw; top: 50%; translate: 0 -50%; width: 2.6cqw; height: 2.6cqw; }
+
+  @media (max-width: 880px) {
+    .hero { grid-template-columns: 1fr; gap: 32px; padding-top: 32px; }
+    .shot { justify-self: center; }
+  }
+
+  /* ---------- Sections ---------- */
+  section { padding: 96px 0; }
+  section + section { border-top: 1px solid var(--line); }
+  .eyebrow {
+    font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 12px;
+  }
+  h2 {
+    font: 600 clamp(28px, 3.6vw, 40px)/1.15 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    letter-spacing: -.015em; margin: 0 0 18px;
+  }
+  .intro { max-width: 640px; margin: 0 auto 56px; text-align: center; }
+  .intro p { color: var(--ink-soft); font-size: 19px; margin: 0; }
+
+  .feature {
+    display: grid; grid-template-columns: .85fr 1.15fr; gap: 64px; align-items: center;
+  }
+  .feature + .feature { margin-top: 96px; }
+  .feature .text p { color: var(--ink-soft); margin: 0 0 16px; }
+  .feature .text ul { padding: 0; margin: 20px 0 0; list-style: none; }
+  .feature .text li { padding-left: 30px; position: relative; margin: 10px 0; }
+  .feature .text li::before {
+    content: ""; position: absolute; left: 0; top: .42em; width: 18px; height: 18px; border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+  .feature .text li::after {
+    content: ""; position: absolute; left: 6px; top: calc(.42em + 6px); width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+  }
+  .feature.wide { grid-template-columns: 1fr; gap: 40px; }
+  .feature.wide .text {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0 64px; align-items: start;
+  }
+  .feature.wide .text > .head { grid-row: span 3; }
+  .feature.wide .card { width: 100%; max-width: 760px; justify-self: center; }
+  .feature.flip .text { order: 2; }
+  @media (max-width: 880px) { .feature.wide .text { grid-template-columns: 1fr; } }
+
+  .card {
+    border-radius: 14px; overflow: hidden; box-shadow: var(--shadow);
+    border: 1px solid var(--line); background: #f3f3f3;
+  }
+  @media (max-width: 880px) {
+    section { padding: 64px 0; }
+    .feature { grid-template-columns: 1fr; gap: 28px; }
+    .feature.flip .text { order: 0; }
+    .feature + .feature { margin-top: 64px; }
+  }
+
+  /* The heat scale, as the Settings window shows it */
+  .scale { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 22px 0 0; padding: 0; list-style: none; font-size: 15px; color: var(--ink-soft); }
+  .feature .text .scale li { padding: 0; margin: 0; display: inline-flex; align-items: center; gap: 7px; }
+  .feature .text .scale li::before {
+    position: static; width: 10px; height: 10px; border-radius: 50%; box-shadow: none; background: var(--c);
+  }
+  .feature .text .scale li::after { content: none; }
+  .feature .text .scale li:first-child::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink-soft); }
+
+  /* The four sets of colours */
+  .themes { display: grid; gap: 14px; margin-top: 8px; }
+  .theme { display: grid; grid-template-columns: 92px 1fr; gap: 4px 16px; align-items: center; }
+  .theme strong { font-size: 16px; }
+  .theme .ramp { display: flex; gap: 6px; }
+  .theme .ramp span { flex: 1; height: 14px; border-radius: 4px; }
+  .theme p { grid-column: 2; margin: 0 !important; font-size: 14px; }
+
+  /* Choosing a layout: the six pictures from the panel */
+  .layouts {
+    margin: 0 auto; max-width: 960px; border-radius: 16px; padding: 28px;
+    background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow);
+  }
+  .picks { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .pick { text-align: center; font-size: 14px; color: var(--ink-soft); }
+  .pic {
+    display: grid; gap: 5px; aspect-ratio: 16 / 10; padding: 6px; margin-bottom: 8px;
+    border-radius: 10px; border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+  }
+  .pic i { border-radius: 4px; background: color-mix(in srgb, var(--accent) 28%, transparent); }
+  .pick.on .pic { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .pick.on .pic i { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+  .pick.on { color: var(--ink); font-weight: 600; }
+  .moments { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .moment h3 { margin: 0 0 4px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
+  .moment p { margin: 0; font-size: 15px; color: var(--ink-soft); }
+  .moment svg { width: 20px; height: 20px; flex: none; color: var(--accent); }
+  @media (max-width: 720px) {
+    .picks { grid-template-columns: repeat(3, 1fr); }
+    .moments { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Dragging the gap between two windows */
+  .drag {
+    position: relative; aspect-ratio: 16 / 10; border-radius: 14px; overflow: hidden;
+    background: linear-gradient(160deg, #23252c, #16171b); box-shadow: var(--shadow);
+    border: 1px solid var(--line); --split: 46%;
+    animation: split 6s ease-in-out infinite;
+  }
+  @property --split { syntax: "<percentage>"; inherits: true; initial-value: 46%; }
+  @keyframes split { 0%, 15% { --split: 46%; } 45%, 60% { --split: 62%; } 90%, 100% { --split: 46%; } }
+  .drag .pane {
+    position: absolute; top: 16px; bottom: 16px; border-radius: 10px;
+    border: 3px solid var(--c);
+  }
+  .drag .pane.a { left: 16px; right: calc(100% - var(--split) + 8px); background: #f6f6f6; --c: var(--h-busy); }
+  .drag .pane.b { left: calc(var(--split) + 8px); right: 16px; background: #202020; --c: var(--h-light); }
+  .drag .pane::before {
+    content: ""; position: absolute; left: 18px; right: 30%; top: 20px; height: 10px; border-radius: 5px;
+    background: currentColor; opacity: .14;
+    box-shadow: 0 22px 0 currentColor, 0 44px 0 currentColor;
+  }
+  .drag .pane.a { color: #000; }
+  .drag .pane.b { color: #fff; }
+  .drag .line {
+    position: absolute; top: 28px; bottom: 28px; left: calc(var(--split) - 2px); width: 4px; border-radius: 2px;
+    background: var(--ember); box-shadow: 0 0 12px rgba(255, 140, 46, .8);
+  }
+  .drag .cursor {
+    position: absolute; top: 50%; left: var(--split); translate: -50% -50%;
+    width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.95);
+    display: grid; place-items: center; box-shadow: 0 4px 14px rgba(0,0,0,.35); color: #1c1d21;
+  }
+  .drag .cursor svg { width: 22px; height: 22px; }
+
+  /* Apps with their own rule */
+  .rules { background: var(--surface); padding: 22px; border-radius: 14px; }
+  .rules h3 { margin: 0 0 14px; font-size: 16px; }
+  .rule {
+    display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+  }
+  .rule + .rule { margin-top: 8px; }
+  .rule .app { width: 32px; height: 32px; border-radius: 8px; flex: none; display: grid; place-items: center; color: #fff; }
+  .rule .app svg { width: 18px; height: 18px; }
+  .rule span { flex: 1; font-weight: 600; font-size: 15px; }
+  .rule em {
+    font-style: normal; font-size: 14px; padding: 6px 12px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); white-space: nowrap;
+  }
+
+  /* Small benefits grid */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .tile {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px;
+  }
+  .tile svg { width: 28px; height: 28px; color: var(--accent); margin-bottom: 12px; }
+  .tile h3 { margin: 0 0 6px; font-size: 17px; }
+  .tile p { margin: 0; color: var(--ink-soft); font-size: 15px; }
+  @media (max-width: 880px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+
+  /* FAQ */
+  .faq { max-width: 760px; margin: 0 auto; }
+  details {
+    border-bottom: 1px solid var(--line); padding: 4px 0;
+  }
+  summary {
+    cursor: pointer; list-style: none; padding: 18px 36px 18px 0; font-weight: 600; font-size: 18px; position: relative;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: "+"; position: absolute; right: 4px; top: 12px; font-size: 26px; font-weight: 300; color: var(--ink-soft);
+    transition: transform .2s ease;
+  }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { margin: 0 0 20px; color: var(--ink-soft); }
+
+  /* Privacy */
+  .policy { max-width: 760px; margin: 0 auto; }
+  .policy p { margin: 0 0 14px; color: var(--ink-soft); }
+
+  /* Closing call */
+  .closing { text-align: center; color: #fff; border-top: 0 !important;
+    background:
+      radial-gradient(700px 300px at 50% 115%, rgba(242, 84, 45, .55), transparent 70%),
+      linear-gradient(180deg, #1b1c21 0%, #17181c 50%, #2b1a13 100%); }
+  .closing h2 { color: #fff; }
+  .closing p { color: rgba(255,255,255,.82); font-size: 19px; margin: 0 auto 32px; max-width: 32em; }
+  .closing .cta { justify-content: center; }
+
+  footer { background: var(--coal); color: rgba(255,255,255,.65); font-size: 14px; padding: 28px 0 36px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  footer a { color: rgba(255,255,255,.85); }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .slot, .win, .btn { transition: none; }
+    .drag { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="glow">
+  <div class="sparks"></div>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#"><img src="img/icon.png" alt="" width="32" height="32">Ember Pane</a>
+      <ul>
+        <li class="hide-sm"><a href="#how">How it works</a></li>
+        <li class="hide-sm"><a href="#features">Features</a></li>
+        <li class="hide-sm"><a href="#faq">Questions</a></li>
+        <li><a href="https://github.com/thenail/emberpane">GitHub</a></li>
+      </ul>
+    </nav>
+
+    <div class="hero">
+      <div>
+        <h1>Your windows in order,<br>their heat <em>at a glance</em>.</h1>
+        <p class="lead">Ember Pane lives on the taskbar. Pick a layout and it arranges the apps you have open, with a little space around each. Every window's frame shows how hard its app is working.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="https://apps.microsoft.com/detail/9MXCXN7NR110">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+            Get it from Microsoft Store
+          </a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <p class="fineprint">Free and open source &middot; Windows 11 &middot; No administrator needed<br>
+          <a class="js-download" href="https://github.com/thenail/emberpane/releases">Installer</a> &middot; <a class="js-zip" href="https://github.com/thenail/emberpane/releases">Zip, to run without installing</a> &middot; <a href="https://github.com/thenail/emberpane/releases">All releases</a>, including ARM-based PCs</p>
+      </div>
+
+      <div class="shot" id="shot">
+        <div class="toggle" role="group" aria-label="Pick a layout for the windows below">
+          <button type="button" data-layout="two" aria-pressed="false">
+            <svg viewBox="0 0 16 12" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="7.5" height="12" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="12" rx="1.5"/></svg>
+            <span>Two columns</span>
+          </button>
+          <button type="button" data-layout="large" aria-pressed="false">
+            <svg viewBox="0 0 16 12" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="9.5" height="12" rx="1.5"/><rect x="10.5" y="0" width="5.5" height="5.5" rx="1.5"/><rect x="10.5" y="6.5" width="5.5" height="5.5" rx="1.5"/></svg>
+            <span>Large and two small</span>
+          </button>
+          <button type="button" data-layout="four" aria-pressed="true">
+            <svg viewBox="0 0 16 12" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="7.5" height="5.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="5.5" rx="1.5"/><rect x="0" y="6.5" width="7.5" height="5.5" rx="1.5"/><rect x="8.5" y="6.5" width="7.5" height="5.5" rx="1.5"/></svg>
+            <span>Four areas</span>
+          </button>
+        </div>
+        <div class="desk" role="img" aria-label="A screen with four windows arranged by Ember Pane, each with a coloured frame: red for an app working flat out, amber for a busy one, teal for a steady load and blue for a light one.">
+          <div class="work">
+            <div class="slot" style="--x:0;--y:0;--w:.5;--h:.5"><div class="win light" data-level="5">
+              <div class="bar"><span>Photos</span><i>&#8211;&#9633;&#215;</i></div>
+              <div class="body"><b>Photos</b><small>Exporting 240 pictures</small><span class="state">Flat out</span></div>
+            </div></div>
+            <div class="slot" style="--x:.5;--y:0;--w:.5;--h:.5"><div class="win dark" data-level="3">
+              <div class="bar"><span>Build</span><i>&#8211;&#9633;&#215;</i></div>
+              <div class="body"><b>Build</b><small>Compiling the project</small><span class="state">Busy</span></div>
+            </div></div>
+            <div class="slot" style="--x:0;--y:.5;--w:.5;--h:.5"><div class="win dark" data-level="2">
+              <div class="bar"><span>Sync</span><i>&#8211;&#9633;&#215;</i></div>
+              <div class="body"><b>Sync</b><small>Syncing in the background</small><span class="state">Working</span></div>
+            </div></div>
+            <div class="slot" style="--x:.5;--y:.5;--w:.5;--h:.5"><div class="win light" data-level="1">
+              <div class="bar"><span>Notes</span><i>&#8211;&#9633;&#215;</i></div>
+              <div class="body"><b>Notes</b><small>Waiting for you to type</small><span class="state">Light</span></div>
+            </div></div>
+          </div>
+          <div class="taskbar"><span></span><span></span><span></span><span></span><img src="img/icon.png" alt=""></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="how">
+    <div class="wrap">
+      <div class="intro">
+        <p class="eyebrow">How it works</p>
+        <h2>Pick a layout. Everything falls into place.</h2>
+        <p>Click Ember Pane's icon on the taskbar and choose how you'd like your screen divided. The apps you have open move into it, and new ones find a place by themselves.</p>
+      </div>
+
+      <div class="layouts" aria-label="The six layouts">
+        <div class="picks">
+          <div class="pick"><div class="pic"><i></i></div>One at a time</div>
+          <div class="pick"><div class="pic" style="grid-template-columns:1fr 1fr"><i></i><i></i></div>Two columns</div>
+          <div class="pick"><div class="pic" style="grid-template-columns:1fr 1fr 1fr"><i></i><i></i><i></i></div>Three columns</div>
+          <div class="pick"><div class="pic" style="grid-template-columns:62fr 38fr"><i></i><i></i></div>Large and small</div>
+          <div class="pick on"><div class="pic" style="grid-template-columns:62fr 38fr;grid-template-rows:1fr 1fr"><i style="grid-row:span 2"></i><i></i><i></i></div>Large and two small</div>
+          <div class="pick"><div class="pic" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr"><i></i><i></i><i></i><i></i></div>Four areas</div>
+        </div>
+        <div class="moments">
+          <div class="moment">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Pick</h3>
+            <p>Six layouts, from one window at a time to four areas.</p>
+          </div>
+          <div class="moment">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>Fit</h3>
+            <p>Everything open moves in, even what was already running.</p>
+          </div>
+          <div class="moment">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="m7 8-4 4 4 4"/><path d="m17 8 4 4-4 4"/></svg>Adjust</h3>
+            <p>Drag between windows to resize, or by a title bar to move.</p>
+          </div>
+          <div class="moment">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z"/></svg>Watch</h3>
+            <p>Each frame warms up as its app works harder.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="feature">
+        <div class="text">
+          <p class="eyebrow">See what is busy</p>
+          <h2>A frame that shows the load</h2>
+          <p>Every window gets a thin coloured frame. It turns from blue through amber to red as its app works harder, so the one that's making your fan spin stands out at a glance.</p>
+          <ul>
+            <li>One full processor core reads as <em>Busy</em>, whatever size your computer is</li>
+            <li>Choose how quickly the colour follows short bursts of work</li>
+            <li>An app at rest keeps the border Windows gives it</li>
+          </ul>
+          <ul class="scale" aria-label="The six levels">
+            <li>Resting</li>
+            <li style="--c:var(--h-light)">Light</li>
+            <li style="--c:var(--h-working)">Working</li>
+            <li style="--c:var(--h-busy)">Busy</li>
+            <li style="--c:var(--h-verybusy)">Very busy</li>
+            <li style="--c:var(--h-flatout)">Flat out</li>
+          </ul>
+        </div>
+        <div class="card">
+          <img src="img/arranged.png" width="1920" height="1080" loading="lazy"
+               alt="Four windows arranged in four areas: Photos exporting pictures with a red frame, Build compiling with an amber frame, Sync with a teal frame and Notes with a blue frame.">
+        </div>
+      </div>
+
+      <div class="feature wide">
+        <div class="text">
+          <div class="head"><p class="eyebrow">Your colours</p>
+          <h2>Four sets of colours, and a frame to suit</h2></div>
+          <p>Pick the colours that read best on your screen, and how wide the frame is. If a colour is hard to see on a light window, add a dark line between the window and the colour.</p>
+          <div class="themes">
+            <div class="theme"><strong>Bright</strong><div class="ramp"><span style="background:#4c9be8"></span><span style="background:#2ec4b6"></span><span style="background:#f2c12e"></span><span style="background:#f2711c"></span><span style="background:#e03131"></span></div><p>Vivid blue through amber to red</p></div>
+            <div class="theme"><strong>Balanced</strong><div class="ramp"><span style="background:#2f80de"></span><span style="background:#0b9287"></span><span style="background:#b28000"></span><span style="background:#e26600"></span><span style="background:#dc2f2f"></span></div><p>Mid-tones that stand out on light and dark windows alike</p></div>
+            <div class="theme"><strong>Ember</strong><div class="ramp"><span style="background:#ffd166"></span><span style="background:#ffb13b"></span><span style="background:#ff8c2e"></span><span style="background:#f2542d"></span><span style="background:#d7263d"></span></div><p>All fire: gold through orange to crimson</p></div>
+            <div class="theme"><strong>Aurora</strong><div class="ramp"><span style="background:#5eead4"></span><span style="background:#38bdf8"></span><span style="background:#818cf8"></span><span style="background:#c084fc"></span><span style="background:#f472b6"></span></div><p>Cool to vivid: aqua through indigo to pink</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <img src="img/settings.png" width="1478" height="1189" loading="lazy"
+               alt="Ember Pane settings: the space at the screen edge, rounded corners, a line between windows, coloured borders in the Bright colours, a 2-pixel frame with a 2-pixel dark line, and how quickly colours change.">
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="text">
+          <p class="eyebrow">Hands on</p>
+          <h2>Resize and move by dragging</h2>
+          <p>Rest the pointer in the gap between two windows and a line appears. Drag it, and the windows on both sides follow. Drag a window by its title bar and the areas light up: let go over one, and the window goes there.</p>
+          <ul>
+            <li>Choose the gap between windows and the space at the screen edge</li>
+            <li>Rounded corners, slightly rounded, or as the app draws them</li>
+            <li>Moving works across monitors too</li>
+          </ul>
+        </div>
+        <div class="drag" role="img" aria-label="Two windows side by side, with a glowing line in the gap between them being dragged to make the left one wider.">
+          <div class="pane a"></div>
+          <div class="pane b"></div>
+          <div class="line"></div>
+          <div class="cursor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><path d="m7 8-4 4 4 4"/><path d="m17 8 4 4-4 4"/></svg></div>
+        </div>
+      </div>
+
+      <div class="feature flip">
+        <div class="text">
+          <p class="eyebrow">Stays out of the way</p>
+          <h2>Nothing moves until you ask</h2>
+          <p>Arranging starts off. Turn it on by picking a layout, and turn it off again whenever you like: every window stays where it is.</p>
+          <ul>
+            <li>Leave any app where you put it, with its frame, or leave it alone entirely</li>
+            <li>Apps with a minimum size get the room they insist on</li>
+            <li>Each monitor and virtual desktop keeps its own layout</li>
+          </ul>
+        </div>
+        <div class="card rules" aria-label="Apps with their own rule, as listed in Settings">
+          <h3>Apps with their own rule</h3>
+          <div class="rule">
+            <div class="app" style="background:#3a6fd8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg></div>
+            <span>Calculator</span><em>Leave it where I put it</em>
+          </div>
+          <div class="rule">
+            <div class="app" style="background:#7c4ddb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 5v14l11-7z"/></svg></div>
+            <span>Video player</span><em>Leave it alone</em>
+          </div>
+          <div class="rule">
+            <div class="app" style="background:#1f9d6b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v12H3z"/><path d="M8 7V5h8v2"/></svg></div>
+            <span>Toolbox</span><em>Leave it where I put it</em>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="intro">
+        <p class="eyebrow">The small things</p>
+        <h2>Made to stay out of your way</h2>
+      </div>
+      <div class="grid">
+        <div class="tile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <h3>Free, and private by design</h3>
+          <p>No cost, no account, no sign-up. It never connects to the network.</p>
+        </div>
+        <div class="tile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <h3>Every screen its own layout</h3>
+          <p>Monitors and virtual desktops each keep theirs. Unplug a monitor and its layout is still there when you plug it back.</p>
+        </div>
+        <div class="tile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <h3>Small and quiet</h3>
+          <p>Sits in the corner of your taskbar. The panel and Settings only run while they're open.</p>
+        </div>
+        <div class="tile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+          <h3>Speaks your language</h3>
+          <p>Comes in 19 languages, from Danish to Japanese, and follows your Windows setting.</p>
+        </div>
+        <div class="tile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          <h3>Easy to install</h3>
+          <p>From the Microsoft Store, or a normal installer that needs no administrator password.</p>
+        </div>
+        <div class="tile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z"/></svg>
+          <h3>Colour per app</h3>
+          <p>It's the app that's busy, so two windows of one app share a colour.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="intro">
+        <p class="eyebrow">Questions</p>
+        <h2>Good to know</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Which versions of Windows are supported?</summary>
+          <p>Windows 11, on regular PCs. Builds for ARM-based PCs are on the <a href="https://github.com/thenail/emberpane/releases">releases page</a>, but haven't been tried on one yet.</p>
+        </details>
+        <details>
+          <summary>What happens to Snap in Windows?</summary>
+          <p>While Ember Pane is arranging, it turns Windows' own Snap off, because it handles dragging windows itself. Snap comes back as soon as arranging stops.</p>
+        </details>
+        <details>
+          <summary>What if I have more windows than areas?</summary>
+          <p>They share an area, in front of each other, and you switch between them as usual. New windows fit in by themselves.</p>
+        </details>
+        <details>
+          <summary>Why won't some windows move?</summary>
+          <p>Windows doesn't let an ordinary app move windows that run as administrator, so those stay where you put them. Some apps also have a minimum size: Ember Pane learns it and gives that window the room it insists on.</p>
+        </details>
+        <details>
+          <summary>What do the colours measure?</summary>
+          <p>How much processor time the app is using. One full processor core reads as <em>Busy</em>, whatever size your computer is, so the colours mean the same on a laptop as on a workstation. They're a guide, not a benchmark.</p>
+        </details>
+        <details>
+          <summary>Is it finished?</summary>
+          <p>This is an early version. It has been used on one monitor with one virtual desktop; more monitors, more virtual desktops and the translations are built but haven't been tried much yet. With the dark line or a wider frame, Ember Pane draws a click-through layer over your windows. If a video or game misbehaves, set the dark line to 0 in Settings, and please <a href="https://github.com/thenail/emberpane/issues">open an issue</a>.</p>
+        </details>
+        <details>
+          <summary>Can I use it without installing?</summary>
+          <p>Yes. Each release also comes as a zip: extract it anywhere, open the <em>EmberPane</em> folder and run <em>EmberPane.exe</em>. Extract the whole zip first, as it won't run from inside it. Your settings are still kept in your Windows user profile, not in the folder.</p>
+        </details>
+        <details>
+          <summary>How do I remove it?</summary>
+          <p>Like any other app: open <em>Settings &rsaquo; Apps &rsaquo; Installed apps</em>, find Ember Pane and choose <em>Uninstall</em>. Running it from the zip? Quit Ember Pane from its Settings, turning off <em>Start with Windows</em> first if you turned it on, then delete the folder.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <div class="intro">
+        <p class="eyebrow">The fine print</p>
+        <h2>Privacy</h2>
+      </div>
+      <div class="policy">
+        <p>Ember Pane does not collect any data. It has no account, no analytics and no tracking, and it never connects to the network. Your settings are stored only on your computer, in your Windows user profile.</p>
+        <p>To colour the frames, Ember Pane reads how much processor time each app uses. That never leaves your computer. Its log names apps, never window titles, and stays on your computer too.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap">
+      <h2>A tidy screen, with a little warmth.</h2>
+      <p>Get Ember Pane, pick a layout, and see at a glance which app is working hardest.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://apps.microsoft.com/detail/9MXCXN7NR110">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+          Get it from Microsoft Store
+        </a>
+      </div>
+      <p class="fineprint"><a class="js-download" href="https://github.com/thenail/emberpane/releases">Installer</a> &middot; <a class="js-zip" href="https://github.com/thenail/emberpane/releases">Zip, to run without installing</a> &middot; <a href="https://github.com/thenail/emberpane/releases">All releases</a></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Ember Pane</span>
+    <span>Free and open source under the <a href="https://github.com/thenail/emberpane/blob/main/LICENSE">MIT License</a> &middot; <a href="https://github.com/thenail/emberpane">Source on GitHub</a> &middot; <a href="#privacy">Privacy</a></span>
+  </div>
+</footer>
+
+<script>
+  // The Installer and Zip links point at the releases page, so they work
+  // without this; here they are moved on to the newest release's x64 files,
+  // the ones named plainly: EmberPane-setup-<version>.exe and
+  // EmberPane-zip-<version>.zip.
+  (function () {
+    if (!window.fetch) return;
+    fetch('https://api.github.com/repos/thenail/emberpane/releases/latest')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (release) {
+        var assets = (release && release.assets) || [];
+        function point(links, pattern) {
+          var asset = assets.filter(function (a) { return pattern.test(a.name); })[0];
+          if (!asset) return;
+          document.querySelectorAll(links).forEach(function (a) {
+            a.href = asset.browser_download_url;
+          });
+        }
+        point('.js-download', /^EmberPane-setup-[\d.]+\.exe$/);
+        point('.js-zip', /^EmberPane-zip-[\d.]+\.zip$/);
+      })
+      .catch(function () {});
+  })();
+
+  // The desk in the hero: the layout buttons move the windows, which drift
+  // between layouts on their own until someone picks one, and the frames
+  // warm and cool as their apps work.
+  (function () {
+    var shot = document.getElementById('shot');
+    var buttons = shot.querySelectorAll('.toggle button');
+    var slots = shot.querySelectorAll('.slot');
+    var wins = shot.querySelectorAll('.win');
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var auto = !still;
+
+    // Areas as [x, y, w, h] on a unit square, in window order. With more
+    // windows than areas, the last ones share the last area, behind it.
+    var layouts = {
+      two:   [[0, 0, .5, 1], [.5, 0, .5, 1]],
+      large: [[0, 0, .62, 1], [.62, 0, .38, .5], [.62, .5, .38, .5]],
+      four:  [[0, 0, .5, .5], [.5, 0, .5, .5], [0, .5, .5, .5], [.5, .5, .5, .5]]
+    };
+    var order = ['four', 'large', 'two'];
+
+    function show(name) {
+      var areas = layouts[name];
+      slots.forEach(function (slot, i) {
+        var a = areas[Math.min(i, areas.length - 1)];
+        slot.style.setProperty('--x', a[0]);
+        slot.style.setProperty('--y', a[1]);
+        slot.style.setProperty('--w', a[2]);
+        slot.style.setProperty('--h', a[3]);
+        slot.style.zIndex = i < areas.length ? 2 : 1;
+      });
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.layout === name)); });
+    }
+
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { auto = false; show(b.dataset.layout); });
+    });
+
+    var step = 0;
+    setInterval(function () {
+      if (!auto) return;
+      step = (step + 1) % order.length;
+      show(order[step]);
+    }, 5000);
+
+    // Each app wanders within its own range of load.
+    var words = ['Resting', 'Light', 'Working', 'Busy', 'Very busy', 'Flat out'];
+    var ranges = [[3, 5], [2, 5], [1, 3], [0, 2]];
+    setInterval(function () {
+      var i = Math.floor(Math.random() * wins.length);
+      var win = wins[i];
+      var level = Number(win.dataset.level) + (Math.random() < .5 ? -1 : 1);
+      level = Math.max(ranges[i][0], Math.min(ranges[i][1], level));
+      win.dataset.level = level;
+      win.querySelector('.state').textContent = words[level];
+    }, still ? 4000 : 1400);
+  })();
+</script>
+</body>
+</html>
