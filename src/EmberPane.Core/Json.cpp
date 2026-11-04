@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Json.h"
 
+#include <ShlObj.h>
+
 namespace EmberPane::Core::Json
 {
     std::optional<bool> Value::AsBool() const
@@ -387,5 +389,56 @@ namespace EmberPane::Core::Json
         WideCharToMultiByte(CP_UTF8, 0, text.data(), static_cast<int>(text.size()), utf8.data(), length,
                             nullptr, nullptr);
         return utf8;
+    }
+
+    std::optional<Value> ReadFile(std::wstring const& path)
+    {
+        HANDLE file = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                                  OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (file == INVALID_HANDLE_VALUE) return std::nullopt;
+
+        LARGE_INTEGER size{};
+        std::optional<std::string> bytes;
+
+        // A file this large is not one of ours.
+        if (GetFileSizeEx(file, &size) && size.QuadPart < 16 * 1024 * 1024)
+        {
+            std::string read(static_cast<size_t>(size.QuadPart), char{});
+            DWORD count = 0;
+            if (::ReadFile(file, read.data(), static_cast<DWORD>(read.size()), &count, nullptr))
+            {
+                read.resize(count);
+                bytes = std::move(read);
+            }
+        }
+
+        CloseHandle(file);
+        if (!bytes) return std::nullopt;
+        return Parse(FromUtf8(*bytes));
+    }
+
+    bool WriteFile(std::wstring const& path, std::wstring const& text)
+    {
+        auto directory = path.substr(0, path.find_last_of(L"\\/"));
+        SHCreateDirectoryExW(nullptr, directory.c_str(), nullptr);
+
+        auto temp = path + L".tmp";
+        auto bytes = ToUtf8(text);
+
+        HANDLE file = CreateFileW(temp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (file == INVALID_HANDLE_VALUE) return false;
+
+        DWORD written = 0;
+        bool ok = ::WriteFile(file, bytes.data(), static_cast<DWORD>(bytes.size()), &written, nullptr) &&
+                  written == bytes.size();
+        CloseHandle(file);
+
+        if (!ok)
+        {
+            DeleteFileW(temp.c_str());
+            return false;
+        }
+
+        return MoveFileExW(temp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
     }
 }

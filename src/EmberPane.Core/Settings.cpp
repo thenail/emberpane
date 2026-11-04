@@ -19,31 +19,6 @@ namespace EmberPane::Core
             return result;
         }
 
-        std::optional<std::string> ReadAllBytes(std::wstring const& path)
-        {
-            HANDLE file = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
-                                      OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-            if (file == INVALID_HANDLE_VALUE) return std::nullopt;
-
-            LARGE_INTEGER size{};
-            std::optional<std::string> result;
-
-            // A settings file larger than this is not a settings file.
-            if (GetFileSizeEx(file, &size) && size.QuadPart < 16 * 1024 * 1024)
-            {
-                std::string bytes(static_cast<size_t>(size.QuadPart), '\0');
-                DWORD read = 0;
-                if (::ReadFile(file, bytes.data(), static_cast<DWORD>(bytes.size()), &read, nullptr))
-                {
-                    bytes.resize(read);
-                    result = std::move(bytes);
-                }
-            }
-
-            CloseHandle(file);
-            return result;
-        }
-
         bool FileExists(std::wstring const& path)
         {
             DWORD attributes = GetFileAttributesW(path.c_str());
@@ -174,12 +149,10 @@ namespace EmberPane::Core
 
     AppSettings AppSettings::Load(std::wstring const& path)
     {
-        auto bytes = ReadAllBytes(path);
-        if (!bytes) return {};
+        auto root = Json::ReadFile(path);
 
-        auto root = Json::Parse(Json::FromUtf8(*bytes));
-
-        // Unreadable or malformed: start clean rather than fail to launch.
+        // Missing, unreadable or malformed: start clean rather than fail to
+        // launch.
         if (!root) return {};
 
         return FromJson(*root);
@@ -269,30 +242,7 @@ namespace EmberPane::Core
 
     bool AppSettings::Save(std::optional<std::wstring> const& path) const
     {
-        auto target = path.value_or(DefaultPath());
-
-        auto directory = target.substr(0, target.find_last_of(L'\\'));
-        SHCreateDirectoryExW(nullptr, directory.c_str(), nullptr);
-
-        auto temp = target + L".tmp";
-        auto bytes = Json::ToUtf8(Json::Write(ToJson()));
-
-        HANDLE file = CreateFileW(temp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
-                                  FILE_ATTRIBUTE_NORMAL, nullptr);
-        if (file == INVALID_HANDLE_VALUE) return false;
-
-        DWORD written = 0;
-        bool ok = WriteFile(file, bytes.data(), static_cast<DWORD>(bytes.size()), &written, nullptr)
-                  && written == bytes.size();
-        CloseHandle(file);
-
         // Losing a preference is preferable to crashing the tray app.
-        if (!ok)
-        {
-            DeleteFileW(temp.c_str());
-            return false;
-        }
-
-        return MoveFileExW(temp.c_str(), target.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
+        return Json::WriteFile(path.value_or(DefaultPath()), Json::Write(ToJson()));
     }
 }

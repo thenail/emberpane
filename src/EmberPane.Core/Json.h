@@ -65,4 +65,11 @@ namespace EmberPane::Core::Json
 
     std::wstring FromUtf8(std::string_view utf8);
     std::string ToUtf8(std::wstring_view text);
+
+    /// A file's JSON. Nothing when it is missing, unreadable or not JSON.
+    std::optional<Value> ReadFile(std::wstring const& path);
+
+    /// Through a temporary file moved over the old one, so that a crash
+    /// halfway leaves the old file whole. Makes the directory if need be.
+    bool WriteFile(std::wstring const& path, std::wstring const& text);
 }

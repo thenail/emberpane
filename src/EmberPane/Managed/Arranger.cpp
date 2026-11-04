@@ -108,17 +108,31 @@ namespace EmberPane::Managed
             if (m_gap) ArrangeTree(m_gap->Tree);
             m_gapHandle->Hide();
             m_gap.reset();
+            AreasChanged();
         };
         m_gapHandle = std::make_unique<GapHandle>(std::move(handlers));
+
+        // What the last run left, read once: only this first start may take
+        // it. Arranging turned on later starts from where the windows are,
+        // since they were free to go anywhere while it was off.
+        if (Persisting())
+        {
+            if (auto root = Core::Json::ReadFile(Core::LayoutState::DefaultPath()))
+                m_saved = Core::LayoutState::FromJson(*root);
+        }
 
         if (Arranging())
             Start();
         else
             ReleaseSnap();
+
+        m_saved.reset();
     }
 
     Arranger::~Arranger()
     {
+        // A quit: the next run puts every window back.
+        SaveState();
         ReleaseSnap();
 
         m_settle.Stop();
@@ -158,15 +172,24 @@ namespace EmberPane::Managed
         m_preset = m_settings.Arrange.Layout;
         HoldSnap();
 
-        // Frontmost first, so the windows in use are the ones on show.
+        // Each window in the area the last run had it in, with the areas the
+        // size they were.
+        if (m_saved)
+            Restore(*m_saved);
+
+        // The rest in the area they are already in, if they are mostly in
+        // one; the others frontmost first, so the windows in use are the ones
+        // on show.
         for (auto hwnd : FrontToBack())
-            AddToLayout(hwnd, std::nullopt);
+            AddToLayout(hwnd, AreaHolding(hwnd));
 
         Trace::Log(L"arranging: " + std::to_wstring(m_placements.size()) + L" windows in " +
                    std::to_wstring(m_layouts.size()) + L" layouts");
 
         ArrangeAll();
+        BeginRearranging();
         UpdateGapWatch();
+        AreasChanged();
     }
 
     void Arranger::Stop()
@@ -175,6 +198,13 @@ namespace EmberPane::Managed
         // normal windows.
         m_running = false;
         ReleaseSnap();
+
+        // Free now, the windows may go anywhere: nothing is put back.
+        if (Persisting())
+            DeleteFileW(Core::LayoutState::DefaultPath().c_str());
+        m_savedText.clear();
+        m_rearranging = false;
+
         m_layouts.clear();
         m_parked.clear();
         m_placements.clear();
@@ -184,6 +214,7 @@ namespace EmberPane::Managed
         m_preview.Hide();
         m_guide.Hide();
         StopWatchingGap();
+        AreasChanged();
     }
 
     void Arranger::SettingsChanged()
@@ -240,7 +271,9 @@ namespace EmberPane::Managed
         Trace::Log(L"layout: " + std::to_wstring(static_cast<int>(m_preset)));
 
         ArrangeAll();
+        BeginRearranging();
         UpdateGapWatch();
+        AreasChanged();
     }
 
     // ------------------------------------------------------------ layouts
@@ -253,6 +286,103 @@ namespace EmberPane::Managed
         Layout layout;
         layout.Areas = Core::MakeLayout(m_preset);
         return m_layouts.emplace(key, std::move(layout)).first->second;
+    }
+
+    std::optional<TreeKey> Arranger::ShownTree()
+    {
+        if (!m_running) return std::nullopt;
+
+        // The panel opens over the taskbar, so its monitor is the one meant.
+        HWND taskbar = FindWindowW(L"Shell_TrayWnd", nullptr);
+        HMONITOR handle = taskbar ? MonitorFromWindow(taskbar, MONITOR_DEFAULTTOPRIMARY)
+                                  : MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
+
+        std::wstring monitor;
+        for (auto const& candidate : m_monitors)
+            if (candidate.Handle == handle) monitor = candidate.Key;
+        if (monitor.empty()) return std::nullopt;
+
+        // A layout's desktop is told by its windows. One with none left can
+        // only be told when it is the monitor's only layout.
+        std::optional<TreeKey> empty;
+        int count = 0;
+        for (auto const& [key, layout] : m_layouts)
+        {
+            if (key.Monitor != monitor) continue;
+            ++count;
+
+            if (layout.Members.empty())
+                empty = key;
+            else if (m_tracker.IsOnCurrentDesktop(layout.Members.begin()->first))
+                return key;
+        }
+
+        return count == 1 ? empty : std::nullopt;
+    }
+
+    std::optional<std::vector<Core::Rect>> Arranger::ResizedPicture()
+    {
+        auto key = ShownTree();
+        if (!key) return std::nullopt;
+
+        auto layout = m_layouts.find(*key);
+        if (layout == m_layouts.end() || !Core::IsResized(layout->second.Areas, m_preset)) return std::nullopt;
+
+        return Core::PictureOf(layout->second.Areas);
+    }
+
+    void Arranger::ResetAreas()
+    {
+        auto key = ShownTree();
+        if (!key) return;
+
+        auto layout = m_layouts.find(*key);
+        if (layout == m_layouts.end()) return;
+
+        Trace::Log(L"layout: areas reset");
+
+        // The same preset numbers its areas the same, so every window keeps
+        // the one it is in.
+        layout->second.Areas = Core::MakeLayout(m_preset);
+        ArrangeTree(*key);
+        BeginRearranging();
+        AreasChanged();
+    }
+
+    std::optional<Core::WindowId> Arranger::AreaHolding(HWND hwnd)
+    {
+        auto window = m_tracker.Windows().find(hwnd);
+        if (window == m_tracker.Windows().end() || window->second.Disposition != Core::Disposition::Tile ||
+            window->second.State != WindowState::Normal)
+            return std::nullopt;
+
+        auto key = KeyFor(hwnd);
+        auto monitor = MonitorOf(key);
+        if (!monitor) return std::nullopt;
+
+        RECT frame = VisibleFrame(hwnd);
+        long long size = static_cast<long long>(frame.right - frame.left) * (frame.bottom - frame.top);
+        if (size <= 0) return std::nullopt;
+
+        auto& layout = LayoutFor(key);
+        auto space = SpaceOf(*monitor, layout);
+
+        std::optional<Core::WindowId> best;
+        long long most = 0;
+        for (auto const& tile : layout.Areas.Arrange(space.Bounds, space.Gap, space.Minimums))
+        {
+            long long width = std::min<long>(frame.right, tile.Bounds.Right) - std::max<long>(frame.left, tile.Bounds.Left);
+            long long height = std::min<long>(frame.bottom, tile.Bounds.Bottom) - std::max<long>(frame.top, tile.Bounds.Top);
+            if (width <= 0 || height <= 0 || width * height <= most) continue;
+
+            most = width * height;
+            best = tile.Id;
+        }
+
+        // Most of it, so an area dragged wider in a run before, and now back
+        // to the preset's size, still holds its window. A window across the
+        // split, or covering the screen, is in none.
+        return most * 10 >= size * 6 ? best : std::nullopt;
     }
 
     size_t Arranger::CountIn(Layout const& layout, Core::WindowId area) const
@@ -279,35 +409,6 @@ namespace EmberPane::Managed
         }
 
         return emptiest;
-    }
-
-    void Arranger::Fill(Layout& layout, Core::WindowId area, std::optional<HWND> except)
-    {
-        if (CountIn(layout, area) > 0) return;
-
-        Core::WindowId fullest = 0;
-        size_t most = 1;
-        for (auto candidate : layout.Areas.Windows())
-        {
-            auto count = CountIn(layout, candidate);
-            if (count > most)
-            {
-                most = count;
-                fullest = candidate;
-            }
-        }
-
-        // With nothing to spare, the area stays empty, ready to be dropped on.
-        if (fullest == 0) return;
-
-        for (auto& [hwnd, member] : layout.Members)
-        {
-            if (member == fullest && hwnd != except)
-            {
-                member = area;
-                return;
-            }
-        }
     }
 
     void Arranger::AddToLayout(HWND hwnd, std::optional<Core::WindowId> area, std::optional<TreeKey> tree)
@@ -341,16 +442,11 @@ namespace EmberPane::Managed
         m_placements.erase(placement);
         m_settling.erase(hwnd);
 
+        // The area it leaves stays as it is, even with nothing in it: no window
+        // is moved from one area to another but by the user.
         if (auto layout = m_layouts.find(key); layout != m_layouts.end())
         {
-            auto member = layout->second.Members.find(hwnd);
-            if (member != layout->second.Members.end())
-            {
-                auto area = member->second;
-                layout->second.Members.erase(member);
-                Fill(layout->second, area, std::nullopt);
-            }
-
+            layout->second.Members.erase(hwnd);
             ArrangeTree(key);
         }
 
@@ -599,6 +695,16 @@ namespace EmberPane::Managed
 
     void Arranger::Settle()
     {
+        struct Timed
+        {
+            double Started = Trace::NowMs();
+            ~Timed()
+            {
+                if (double took = Trace::NowMs() - Started; took > 30)
+                    Trace::Log(L"arrange: settled in " + std::to_wstring(std::lround(took)) + L" ms");
+            }
+        } timed;
+
         // While a window or the gap is held, the layout moves under the
         // windows several times a second, and an app a few requests behind
         // would read as one that refuses to move. They are judged once it is
@@ -633,6 +739,8 @@ namespace EmberPane::Managed
                 placement.Settled = now;
                 placement.Unmoved = 0;
                 placement.Retries = 0;
+                placement.Refused.reset();
+                placement.Refusals = 0;
             }
             else if (Near(now, placement.Before))
             {
@@ -668,6 +776,26 @@ namespace EmberPane::Managed
                 // learned.
                 RECT frame = VisibleFrame(hwnd);
                 Core::Size refused{ frame.right - frame.left, frame.bottom - frame.top };
+
+                // Once is not proof: an app restoring its saved size late, or
+                // one still coming back from a snap, is larger than asked too,
+                // and a minimum learned from that holds its area wide for as
+                // long as it is in it. Asked again; a real minimum refuses the
+                // same way. Bounded, for an app whose size keeps changing.
+                bool again = placement.Refused && Near(placement.Refused->Width, refused.Width) &&
+                             Near(placement.Refused->Height, refused.Height);
+                if (!again && placement.Refusals++ < MaxRetries)
+                {
+                    placement.Refused = refused;
+                    MoveTo(hwnd, asked);
+                    m_settling.insert(hwnd);
+                    continue;
+                }
+
+                Trace::Log(L"arrange: " + window->second.ExeName + L" refuses below " +
+                           std::to_wstring(refused.Width) + L"x" + std::to_wstring(refused.Height));
+                placement.Refused.reset();
+                placement.Refusals = 0;
                 placement.Minimum = { std::max(placement.Minimum.Width, refused.Width),
                                       std::max(placement.Minimum.Height, refused.Height) };
                 placement.Settled = now;
@@ -701,7 +829,35 @@ namespace EmberPane::Managed
             ArrangeTree(key);
 
         if (!m_settling.empty())
+        {
             ArmSettle(FreshSettleMs);
+            return;
+        }
+
+        // Every window moved by the change of layout is where it was asked
+        // to be, or as near as it will go: the frames can be drawn again.
+        if (m_rearranging)
+        {
+            m_rearranging = false;
+            Rearranged();
+        }
+    }
+
+    void Arranger::BeginRearranging()
+    {
+        // Nothing moved, nothing to wait for.
+        if (m_settling.empty()) return;
+
+        m_rearranging = true;
+        m_rearrangingSince = GetTickCount64();
+    }
+
+    bool Arranger::Rearranging() const
+    {
+        // However the windows answer, not longer than this: an app slow to
+        // say where it is must not cost every window its frame for good.
+        constexpr ULONGLONG LongestMs = 3000;
+        return m_rearranging && GetTickCount64() - m_rearrangingSince < LongestMs;
     }
 
     // ------------------------------------------------------------ what the tracker sees
@@ -866,6 +1022,133 @@ namespace EmberPane::Managed
 
         for (auto const& key : corrected)
             ArrangeTree(key);
+
+        // On the tick rather than at each change: there are many, and a few
+        // seconds lost to a crash is nothing a drag cannot put right.
+        SaveState();
+    }
+
+    // ------------------------------------------------------------ across a restart
+
+    bool Arranger::Persisting() const
+    {
+        // A test run arranges a few windows by title, and must not take the
+        // real desktop's state, or leave its own in place of it.
+        return !CommandLine::Value(L"--only-title");
+    }
+
+    std::int64_t Arranger::BootTime()
+    {
+        FILETIME now{};
+        GetSystemTimeAsFileTime(&now);
+        auto ms = static_cast<std::int64_t>((static_cast<ULONGLONG>(now.dwHighDateTime) << 32 | now.dwLowDateTime) / 10'000);
+        return ms - static_cast<std::int64_t>(GetTickCount64());
+    }
+
+    void Arranger::SaveState()
+    {
+        if (!m_running || !Persisting()) return;
+
+        auto saved = [](HWND hwnd, Core::WindowId area)
+        {
+            DWORD process = 0;
+            GetWindowThreadProcessId(hwnd, &process);
+            return Core::SavedWindow{ static_cast<std::uint64_t>(reinterpret_cast<UINT_PTR>(hwnd)), process, area };
+        };
+
+        Core::LayoutState state;
+        state.Preset = m_preset;
+        state.Boot = m_boot;
+
+        for (auto const* layouts : { &m_layouts, &m_parked })
+        {
+            for (auto const& [key, layout] : *layouts)
+            {
+                Core::SavedLayout entry{ key.Monitor, key.Desktop, layout.Areas.Ratios(), {} };
+                for (auto const& [hwnd, area] : layout.Members)
+                    entry.Members.push_back(saved(hwnd, area));
+                state.Layouts.push_back(std::move(entry));
+            }
+        }
+
+        for (auto const& [hwnd, area] : m_returning)
+            state.Returning.push_back(saved(hwnd, area));
+
+        // Written only when it changed, which on most ticks it has not.
+        auto text = Core::Json::Write(state.ToJson());
+        if (text == m_savedText) return;
+
+        if (Core::Json::WriteFile(Core::LayoutState::DefaultPath(), text))
+            m_savedText = std::move(text);
+    }
+
+    void Arranger::Restore(Core::LayoutState const& state)
+    {
+        // Windows has restarted since, and every handle names something else,
+        // or the areas were another preset's. The clock may have been set
+        // since, so not to the millisecond.
+        constexpr std::int64_t BootSlackMs = 2 * 60 * 1000;
+        if (state.Preset != m_preset || std::abs(state.Boot - m_boot) > BootSlackMs)
+        {
+            Trace::Log(L"layout: saved state is from another boot or layout - not used");
+            return;
+        }
+
+        // Still the same window: a handle can be given again to a later one,
+        // but not in the same process.
+        auto alive = [](Core::SavedWindow const& saved) -> HWND
+        {
+            HWND hwnd = reinterpret_cast<HWND>(static_cast<UINT_PTR>(saved.Window));
+            DWORD process = 0;
+            if (!IsWindow(hwnd) || !GetWindowThreadProcessId(hwnd, &process) || process != saved.Process)
+                return nullptr;
+            return hwnd;
+        };
+
+        size_t restored = 0;
+        for (auto const& saved : state.Layouts)
+        {
+            TreeKey key{ saved.Monitor, saved.Desktop };
+
+            Layout layout;
+            layout.Areas = Core::MakeLayout(m_preset);
+            layout.Areas.SetRatios(saved.Ratios);
+
+            // Its monitor is not here: kept for its return, as when one is
+            // unplugged. Its windows go where they are, for the moment.
+            if (!MonitorOf(key))
+            {
+                for (auto const& member : saved.Members)
+                    if (HWND hwnd = alive(member); hwnd && layout.Areas.Contains(member.Area))
+                        layout.Members[hwnd] = member.Area;
+                m_parked.insert_or_assign(key, std::move(layout));
+                continue;
+            }
+
+            m_layouts.insert_or_assign(key, std::move(layout));
+            for (auto const& member : saved.Members)
+            {
+                HWND hwnd = alive(member);
+                if (!hwnd) continue;
+
+                AddToLayout(hwnd, member.Area, key);
+                if (m_placements.contains(hwnd))
+                {
+                    ++restored;
+                    continue;
+                }
+
+                // Minimized meanwhile: it returns to the same area.
+                if (IsIconic(hwnd))
+                    m_returning[hwnd] = member.Area;
+            }
+        }
+
+        for (auto const& member : state.Returning)
+            if (HWND hwnd = alive(member))
+                m_returning[hwnd] = member.Area;
+
+        Trace::Log(L"layout: " + std::to_wstring(restored) + L" windows back in their areas");
     }
 
     void Arranger::DisplaysChanged()
@@ -946,6 +1229,7 @@ namespace EmberPane::Managed
         }
 
         ArrangeAll();
+        AreasChanged();
     }
 
     void Arranger::SetDisplayOn(bool on)
@@ -1140,22 +1424,17 @@ namespace EmberPane::Managed
         auto member = source.Members.find(dragged);
         if (member == source.Members.end()) return;
 
-        auto left = member->second;
-
+        // Only the window dropped moves. The area it left stays, even empty,
+        // and the windows already in the one it joined stay there, behind it.
         if (from == drop.Tree)
         {
             member->second = drop.Area;
-
-            // The area it left takes the one it joined: the two trade places.
-            if (left != drop.Area)
-                Fill(source, left, dragged);
         }
         else
         {
             source.Members.erase(member);
             LayoutFor(drop.Tree).Members[dragged] = drop.Area;
             placement->second.Tree = drop.Tree;
-            Fill(source, left, std::nullopt);
             ArrangeTree(drop.Tree);
         }
 
@@ -1197,6 +1476,17 @@ namespace EmberPane::Managed
         auto drag = std::exchange(m_drag, std::nullopt);
         if (!m_running || !drag || drag->Hwnd != hwnd) return;
 
+        // A tray click waits behind this, so a slow one is worth knowing.
+        struct Timed
+        {
+            double Started = Trace::NowMs();
+            ~Timed()
+            {
+                if (double took = Trace::NowMs() - Started; took > 30)
+                    Trace::Log(L"drag: handled in " + std::to_wstring(std::lround(took)) + L" ms");
+            }
+        } timed;
+
         Trace::Log(std::wstring(L"drag: ended, moving ") + (drag->Moving ? L"yes" : L"no") + L", landing " +
                    (drag->Landing ? L"yes" : L"no") + L", loosening " + (drag->Loosening ? L"yes" : L"no"));
 
@@ -1225,6 +1515,7 @@ namespace EmberPane::Managed
                 {
                     layout->second.Areas = std::move(*drag->AreasBefore);
                     ArrangeTree(placement.Tree);
+                    AreasChanged();
                 }
             return;
         }
@@ -1256,6 +1547,9 @@ namespace EmberPane::Managed
         // layout says.
         if (auto still = m_placements.find(hwnd); still != m_placements.end())
             ArrangeTree(still->second.Tree);
+
+        if (resized)
+            AreasChanged();
     }
 
     // ------------------------------------------------------------ the gap line

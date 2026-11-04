@@ -22,6 +22,7 @@ namespace winrt::EmberPane::implementation
         void OnMessage(::EmberPane::Link::Message const& message);
         void OnState(::EmberPane::Link::Message const& message);
         void ApplySettings(::EmberPane::Link::Message const& message);
+        void ApplyAreas(::EmberPane::Link::Message const& message);
         void Send(::EmberPane::Link::Message const& message);
         void OpenSettings();
         void ExitIfIdle();

@@ -105,6 +105,33 @@ TEST(The_pictures_match_the_areas)
     CHECK((PictureOf(LayoutPreset::OneAtATime)[0] == Rect{ 0, 0, 1000, 1000 }));
 }
 
+TEST(A_resized_layout_draws_resized)
+{
+    auto tree = MakeLayout(LayoutPreset::TwoColumns);
+    CHECK(tree.MoveEdge(1, Edge::Right, 1400, Area, Gap, Minimums()));
+
+    auto picture = PictureOf(tree);
+    CHECK_EQ(size_t{ 2 }, picture.size());
+    CHECK(picture[0].Width() > picture[1].Width());
+    CHECK_EQ(picture[0].Right, picture[1].Left);
+}
+
+TEST(Only_a_moved_edge_counts_as_resized)
+{
+    for (auto preset : AllPresets())
+        CHECK(!IsResized(MakeLayout(preset), preset));
+
+    auto tree = MakeLayout(LayoutPreset::LargeAndTwoSmall);
+    CHECK(tree.MoveEdge(2, Edge::Bottom, 300, Area, Gap, Minimums()));
+    CHECK(IsResized(tree, LayoutPreset::LargeAndTwoSmall));
+
+    // Back where it was, give or take a pixel of the screen.
+    auto twice = MakeLayout(LayoutPreset::TwoColumns);
+    CHECK(twice.MoveEdge(1, Edge::Right, 1200, Area, Gap, Minimums()));
+    CHECK(twice.MoveEdge(1, Edge::Right, (Area.Width() - Gap) / 2, Area, Gap, Minimums()));
+    CHECK(!IsResized(twice, LayoutPreset::TwoColumns));
+}
+
 TEST(Settings_remember_the_layout)
 {
     AppSettings s;

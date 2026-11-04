@@ -270,4 +270,7 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>Vier gebieden</value>
   </data>
+  <data name="LayoutResetSizes" xml:space="preserve">
+    <value>Grootten herstellen</value>
+  </data>
 </root>

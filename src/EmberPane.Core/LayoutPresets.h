@@ -19,4 +19,11 @@ namespace EmberPane::Core
 
     /// The areas on a 1000 by 1000 square, for drawing the panel's pictures.
     std::vector<Rect> PictureOf(LayoutPreset preset);
+
+    /// The same for areas as they stand, so a resized layout draws resized.
+    std::vector<Rect> PictureOf(LayoutTree const& areas);
+
+    /// The areas have been resized away from the preset's: some edge has moved
+    /// by more than a sliver, measured on the picture's square.
+    bool IsResized(LayoutTree const& areas, LayoutPreset preset);
 }

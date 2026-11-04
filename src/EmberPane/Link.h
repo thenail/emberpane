@@ -30,6 +30,8 @@ namespace EmberPane::Link
         // UI -> host
         inline constexpr wchar_t Hello[] = L"hello";           // { hwnd }
         inline constexpr wchar_t SaveSettings[] = L"saveSettings"; // { settings }
+        inline constexpr wchar_t ResetAreas[] = L"resetAreas";
+        inline constexpr wchar_t Leaving[] = L"leaving";       // { closedMsAgo }
         inline constexpr wchar_t Quit[] = L"quit";
 
         // host -> UI
@@ -37,6 +39,7 @@ namespace EmberPane::Link
         inline constexpr wchar_t Windows[] = L"windows";       // { windows: [{ app, exe }] }
         inline constexpr wchar_t Status[] = L"status";         // { text }
         inline constexpr wchar_t Settings[] = L"settings";     // { settings }
+        inline constexpr wchar_t Areas[] = L"areas";           // { preset, areas: [[l, t, r, b]] }, areas only when resized
         inline constexpr wchar_t Toggle[] = L"toggle";
         inline constexpr wchar_t OpenSettings[] = L"openSettings";
         // and Quit, the other way

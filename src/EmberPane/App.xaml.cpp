@@ -54,6 +54,7 @@ namespace winrt::EmberPane::implementation
 
         services.OpenSettings = [this] { OpenSettings(); };
         services.Quit = [this] { Quit(); };
+        services.ResetAreas = [this] { Send(Link::Make(Link::Type::ResetAreas)); };
         services.SaveSettings = [this]
         {
             auto m = Link::Make(Link::Type::SaveSettings);
@@ -126,6 +127,11 @@ namespace winrt::EmberPane::implementation
             ApplySettings(message);
             services.SettingsChanged();
         }
+        else if (type == Link::Type::Areas)
+        {
+            ApplyAreas(message);
+            services.AreasChanged();
+        }
         else if (type == Link::Type::Toggle)
         {
             m_flyout->Toggle();
@@ -147,6 +153,27 @@ namespace winrt::EmberPane::implementation
             m_services->Settings = ::EmberPane::Core::AppSettings::FromJson(*settings);
     }
 
+    void App::ApplyAreas(Link::Message const& message)
+    {
+        auto& services = *m_services;
+
+        if (auto preset = message.Find(L"preset"))
+            services.AreasPreset = static_cast<::EmberPane::Core::LayoutPreset>(preset->AsInt().value_or(0));
+
+        services.ResizedAreas.clear();
+        if (auto areas = message.Find(L"areas"))
+        {
+            for (auto const& item : areas->Items())
+            {
+                auto const& edges = item.Items();
+                if (edges.size() != 4) continue;
+
+                auto at = [&](size_t i) { return edges[i].AsInt().value_or(0); };
+                services.ResizedAreas.push_back({ at(0), at(1), at(2), at(3) });
+            }
+        }
+    }
+
     void App::OnState(Link::Message const& message)
     {
         if (m_flyout) return;
@@ -154,6 +181,7 @@ namespace winrt::EmberPane::implementation
 
         auto& services = *m_services;
         ApplySettings(message);
+        ApplyAreas(message);
 
         m_flyout = make_self<FlyoutWindow>();
 
@@ -202,6 +230,13 @@ namespace winrt::EmberPane::implementation
         // next click on the tray starts a fresh one.
         ::EmberPane::Trace::Log(L"ui: nothing open - exiting");
         m_exiting = true;
+
+        // Said first: the process takes a while to go, seconds in a Debug
+        // build, and until the host knows, a click on the tray is sent here
+        // as a toggle no one handles, and the panel does not open.
+        auto leaving = Link::Make(Link::Type::Leaving);
+        leaving.Set(L"closedMsAgo", m_flyout->MsSinceClosed());
+        Send(leaving);
 
         // Not from inside the window's own event.
         Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread().TryEnqueue([this]

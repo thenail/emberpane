@@ -54,6 +54,7 @@ namespace EmberPane::Managed
         m_tracker.DragStarted.Add([this](HWND) { Follow(); });
         m_tracker.DragEnded.Add([this](HWND) { Follow(); });
         m_arranger.Moved.Add([this] { Follow(); });
+        m_arranger.Rearranged.Add([this] { Follow(); });
     }
 
     FrameRings::~FrameRings()
@@ -65,8 +66,9 @@ namespace EmberPane::Managed
     {
         // The frames cannot keep up with windows being resized, and one left
         // behind looks worse than none. Windows' own borders are left as they
-        // are, and the frames are back once the edge or gap is let go.
-        if (m_arranger.Resizing())
+        // are, and the frames are back once the edge or gap is let go, or the
+        // windows of a layout just chosen have all arrived.
+        if (m_arranger.Resizing() || m_arranger.Rearranging())
         {
             for (auto const& [monitor, layer] : m_layers)
                 layer->Hide();

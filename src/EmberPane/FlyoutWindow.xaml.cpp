@@ -26,6 +26,9 @@ namespace winrt::EmberPane::implementation
         /// Gap between the panel and the taskbar / screen edges, in DIPs.
         constexpr double Gap = 12;
 
+        /// A layout's picture, in DIPs.
+        constexpr float PictureWidth = 84, PictureHeight = 48;
+
         /// Quick Settings decelerates hard into place, and drops back faster.
         constexpr double OpenMs = 300;
         constexpr double CloseMs = 180;
@@ -156,6 +159,7 @@ namespace winrt::EmberPane::implementation
         });
 
         services.SettingsChanged.Add([this] { UpdateLayouts(); });
+        services.AreasChanged.Add([this] { UpdateLayouts(); });
 
         BuildLayouts();
         UpdateStatus();
@@ -165,51 +169,29 @@ namespace winrt::EmberPane::implementation
 
     void FlyoutWindow::BuildLayouts()
     {
-        constexpr float Width = 84, Height = 48, Inset = 2;
+        auto resetName = hstring{ ::EmberPane::Strings::Get(L"LayoutResetSizes") };
 
         int index = 0;
         for (auto preset : Core::AllPresets())
         {
             Canvas picture;
-            picture.Width(Width);
-            picture.Height(Height);
+            picture.Width(PictureWidth);
+            picture.Height(PictureHeight);
             picture.HorizontalAlignment(HorizontalAlignment::Center);
 
-            for (auto const& area : Core::PictureOf(preset))
-            {
-                Shapes::Rectangle shape;
-                shape.RadiusX(3);
-                shape.RadiusY(3);
-                shape.Width(area.Width() * Width / 1000 - Inset * 2);
-                shape.Height(area.Height() * Height / 1000 - Inset * 2);
-                Canvas::SetLeft(shape, area.Left * Width / 1000 + Inset);
-                Canvas::SetTop(shape, area.Top * Height / 1000 + Inset);
-                picture.Children().Append(shape);
-            }
-
+            // No caption: the picture says it. The name is still there for a
+            // pointer that rests on it and for a screen reader.
             auto name = hstring{ ::EmberPane::Strings::Get(NameKey(preset)) };
 
-            TextBlock caption;
-            caption.Text(name);
-            caption.TextAlignment(TextAlignment::Center);
-            caption.TextWrapping(TextWrapping::Wrap);
-            caption.Margin(ThicknessHelper::FromLengths(0, 6, 0, 0));
-            caption.Style(Application::Current().Resources().Lookup(box_value(L"SecondaryCaption")).as<Style>());
-
-            StackPanel content;
-            content.Children().Append(picture);
-            content.Children().Append(caption);
-
             Button button;
-            button.Content(content);
+            button.Content(picture);
             button.HorizontalAlignment(HorizontalAlignment::Stretch);
             button.HorizontalContentAlignment(HorizontalAlignment::Center);
             button.VerticalAlignment(VerticalAlignment::Stretch);
-            button.VerticalContentAlignment(VerticalAlignment::Top);
-            button.Padding(ThicknessHelper::FromLengths(4, 8, 4, 6));
+            button.VerticalContentAlignment(VerticalAlignment::Center);
+            button.Padding(ThicknessHelper::FromLengths(4, 12, 4, 12));
             Automation::AutomationProperties::SetName(button, name);
-            Grid::SetColumn(button, index % 3);
-            Grid::SetRow(button, index / 3);
+            ToolTipService::SetToolTip(button, box_value(name));
 
             // Choosing a layout says you want one, so it turns arranging on.
             button.Click([preset](auto&&, auto&&)
@@ -220,8 +202,44 @@ namespace winrt::EmberPane::implementation
                 services.SaveAndNotify();
             });
 
-            Layouts().Children().Append(button);
+            // Over the picture's corner, and only once its areas have been
+            // resized: a sibling of the layout's button, not inside it, so
+            // the two are two controls to the keyboard and to a screen reader.
+            FontIcon glyph;
+            glyph.Glyph(L""); // Refresh
+            glyph.FontSize(10);
+
+            Button reset;
+            reset.Content(glyph);
+            reset.Width(22);
+            reset.Height(22);
+            reset.Padding(ThicknessHelper::FromUniformLength(0));
+            reset.CornerRadius(CornerRadiusHelper::FromUniformRadius(4));
+            reset.HorizontalAlignment(HorizontalAlignment::Right);
+            reset.VerticalAlignment(VerticalAlignment::Top);
+            reset.Margin(ThicknessHelper::FromLengths(0, 4, 4, 0));
+            reset.Visibility(Visibility::Collapsed);
+            Automation::AutomationProperties::SetName(reset, resetName);
+            ToolTipService::SetToolTip(reset, box_value(resetName));
+
+            reset.Click([this](auto&&, auto&&)
+            {
+                // It goes as the host answers; focus is not left to fall on
+                // the first layout, with a focus rectangle.
+                FocusSink().Focus(FocusState::Programmatic);
+                if (auto& resetAreas = ::EmberPane::Services::Get().ResetAreas)
+                    resetAreas();
+            });
+
+            Grid tile;
+            tile.Children().Append(button);
+            tile.Children().Append(reset);
+            Grid::SetColumn(tile, index % 3);
+            Grid::SetRow(tile, index / 3);
+
+            Layouts().Children().Append(tile);
             m_pictures.push_back(picture);
+            m_resets.push_back(reset);
             ++index;
         }
 
@@ -230,18 +248,38 @@ namespace winrt::EmberPane::implementation
 
     void FlyoutWindow::UpdateLayouts()
     {
-        auto const& settings = ::EmberPane::Services::Get().Settings;
+        auto const& services = ::EmberPane::Services::Get();
+        auto const& settings = services.Settings;
         auto presets = Core::AllPresets();
 
         for (size_t i = 0; i < m_pictures.size() && i < presets.size(); ++i)
         {
-            // The one in use is in the accent colour while arranging is on.
+            // The one in use is in the accent colour while arranging is on,
+            // and drawn as its areas are now, if they have been resized.
             bool chosen = settings.Arrange.Enabled && presets[i] == settings.Arrange.Layout;
+            bool resized = chosen && services.AreasPreset == presets[i] && !services.ResizedAreas.empty();
+
             auto key = chosen ? L"AccentFillColorDefaultBrush" : L"TextFillColorTertiaryBrush";
             auto brush = Application::Current().Resources().Lookup(box_value(key)).as<Media::Brush>();
 
-            for (auto const& child : m_pictures[i].Children())
-                child.as<Shapes::Rectangle>().Fill(brush);
+            auto picture = m_pictures[i];
+            picture.Children().Clear();
+            for (auto const& area : resized ? services.ResizedAreas : Core::PictureOf(presets[i]))
+            {
+                constexpr float Inset = 2;
+
+                Shapes::Rectangle shape;
+                shape.RadiusX(3);
+                shape.RadiusY(3);
+                shape.Width(std::max(0.0f, area.Width() * PictureWidth / 1000 - Inset * 2));
+                shape.Height(std::max(0.0f, area.Height() * PictureHeight / 1000 - Inset * 2));
+                Canvas::SetLeft(shape, area.Left * PictureWidth / 1000 + Inset);
+                Canvas::SetTop(shape, area.Top * PictureHeight / 1000 + Inset);
+                shape.Fill(brush);
+                picture.Children().Append(shape);
+            }
+
+            m_resets[i].Visibility(resized ? Visibility::Visible : Visibility::Collapsed);
         }
     }
 
@@ -384,6 +422,11 @@ namespace winrt::EmberPane::implementation
     }
 
     // ------------------------------------------------------------ show / hide
+
+    double FlyoutWindow::MsSinceClosed() const
+    {
+        return NowMs() - m_closeStartedAt;
+    }
 
     void FlyoutWindow::Toggle()
     {

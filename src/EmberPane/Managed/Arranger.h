@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include "LayoutPresets.h"
+#include "LayoutState.h"
 #include "Managed/Overlays.h"
 #include "Managed/WindowTracker.h"
 #include "Native/Monitors.h"
@@ -81,6 +82,30 @@ namespace EmberPane::Managed
         /// A window has been told to move.
         Event<> Moved;
 
+        /// The windows are moving to the areas of a layout just chosen, put
+        /// back to its sizes, or just switched on: until they are all there,
+        /// a frame drawn round one would be drawn where it no longer is.
+        bool Rearranging() const;
+
+        /// They have all arrived.
+        Event<> Rearranged;
+
+        /// The layout in use.
+        Core::LayoutPreset Preset() const { return m_preset; }
+
+        /// The areas of the layout the panel shows, on the panel's square, when
+        /// they have been resized away from the preset's. That is the layout of
+        /// the taskbar's monitor, on the desktop being looked at, as the panel
+        /// opens over it. None when they have not, or with arranging off.
+        std::optional<std::vector<Core::Rect>> ResizedPicture();
+
+        /// That layout's areas back to the preset's. Its windows keep their
+        /// areas; only the sizes change.
+        void ResetAreas();
+
+        /// Some layout's areas were resized, put back or made again.
+        Event<> AreasChanged;
+
     private:
         /// What is known about a window's place.
         struct Placement
@@ -110,6 +135,13 @@ namespace EmberPane::Managed
 
             /// What this window refused to go below, in visible pixels.
             Core::Size Minimum;
+
+            /// The size it last came back at when it was larger than asked, not
+            /// yet taken for a minimum: an app restoring its own saved size a
+            /// moment late looks the same once. It is asked again, and only a
+            /// second refusal at the same size is learned.
+            std::optional<Core::Size> Refused;
+            int Refusals{ 0 };
         };
 
         /// A preset's areas, and which window is in which. Windows beyond the
@@ -169,14 +201,29 @@ namespace EmberPane::Managed
         void Start();
         void Stop();
 
+        /// Not in a test run; see the .cpp.
+        bool Persisting() const;
+
+        /// When Windows started, to tell this boot's handles from another's.
+        static std::int64_t BootTime();
+
+        /// To disk, when anything has changed since it was last written.
+        void SaveState();
+
+        /// What the last run saved, as arranging starts: each window that is
+        /// still there back in its area, and the areas their sizes.
+        void Restore(Core::LayoutState const& state);
+
         Layout& LayoutFor(TreeKey const& key);
+
+        /// The layout the panel shows; see ResizedPicture.
+        std::optional<TreeKey> ShownTree();
         Core::WindowId EmptiestArea(Layout const& layout) const;
         size_t CountIn(Layout const& layout, Core::WindowId area) const;
 
-        /// An area with nothing in it takes a window from the fullest one, if
-        /// that has one to spare. `except` stays where it is: moved out of an
-        /// area and into another, a window trades places this way.
-        void Fill(Layout& layout, Core::WindowId area, std::optional<HWND> except);
+        /// The area a window is already in, as arranging starts: the one
+        /// holding most of it, if that is most of the window.
+        std::optional<Core::WindowId> AreaHolding(HWND hwnd);
 
         /// Into the layout of its own monitor, or of `tree` when given.
         void AddToLayout(HWND hwnd, std::optional<Core::WindowId> area, std::optional<TreeKey> tree = std::nullopt);
@@ -209,6 +256,10 @@ namespace EmberPane::Managed
         void ArrangeAll();
         void Place(ManagedWindow& window, Placement& placement, Core::Rect const& tile);
         void ArmSettle(int milliseconds);
+
+        /// After a whole layout is placed: Rearranging until Settle has read
+        /// every window back.
+        void BeginRearranging();
         void Settle();
         void MoveTo(HWND hwnd, RECT const& rect);
 
@@ -260,6 +311,16 @@ namespace EmberPane::Managed
         std::set<HWND> m_loose;
 
         std::set<HWND> m_settling;
+        bool m_rearranging{ false };
+        ULONGLONG m_rearrangingSince{ 0 };
+
+        /// What the last run left, until the first start has used it.
+        std::optional<Core::LayoutState> m_saved;
+
+        /// As last written, so that an unchanged state is not written again.
+        std::wstring m_savedText;
+
+        std::int64_t m_boot{ BootTime() };
         winrt::Windows::System::DispatcherQueueTimer m_settle{ nullptr };
 
         std::optional<Dragged> m_drag;

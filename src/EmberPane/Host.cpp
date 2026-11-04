@@ -71,6 +71,17 @@ namespace EmberPane
         // After Start, which it then arranges in the order of the screen.
         m_arranger = std::make_unique<Managed::Arranger>(dispatcher, *m_tracker, m_settings);
         m_rings = std::make_unique<Managed::FrameRings>(dispatcher, *m_tracker, *m_arranger, m_settings);
+        m_arranger->AreasChanged.Add([this]
+        {
+            // Asks Explorer which desktop is in front: not worth it with no
+            // panel to tell. One that opens later is sent the areas then.
+            if (m_uiState != UiState::Connected) return;
+
+            double started = Trace::NowMs();
+            Send(MakeAreas());
+            if (double took = Trace::NowMs() - started; took > 30)
+                Trace::Log(L"areas: sent in " + std::to_wstring(std::lround(took)) + L" ms");
+        });
 
         m_events->DisplaysChanged = [this]
         {
@@ -195,6 +206,10 @@ namespace EmberPane
             // The click on our own tray icon is what grants the right to take
             // the foreground; it is ours, and the panel is in another process.
             AllowSetForegroundWindow(m_uiProcessId);
+
+            // Which layout the panel shows follows the desktop being looked
+            // at, and nothing says when that changes.
+            Send(MakeAreas());
             Send(Link::Make(Link::Type::Toggle));
             break;
         }
@@ -298,8 +313,16 @@ namespace EmberPane
         Send(MakeState());
     }
 
-    void Host::OnUiGone()
+    void Host::OnUiGone(double closedMsAgo)
     {
+        // Let go of already, when it said it was leaving.
+        if (m_uiState == UiState::None) return;
+
+        // Its exit, landing late, after a new UI was started: that one is
+        // still running.
+        if (closedMsAgo == 0 && m_uiProcess && WaitForSingleObject(m_uiProcess, 0) == WAIT_TIMEOUT)
+            return;
+
         if (m_uiWait)
         {
             UnregisterWaitEx(m_uiWait, nullptr);
@@ -314,8 +337,8 @@ namespace EmberPane
         m_uiProcessId = 0;
         m_uiHwnd = nullptr;
         m_uiState = UiState::None;
-        m_uiGoneAt = GetTickCount64();
-        Trace::Log(L"ui: gone");
+        m_uiGoneAt = GetTickCount64() - static_cast<ULONGLONG>(std::clamp(closedMsAgo, 0.0, double(ReopenGuardMs)));
+        Trace::Log(closedMsAgo > 0 ? L"ui: leaving" : L"ui: gone");
     }
 
     // ------------------------------------------------------------ messages
@@ -350,6 +373,15 @@ namespace EmberPane
             m_arranger->SettingsChanged();
             PaintFrames();
         }
+        else if (type == Link::Type::Leaving)
+        {
+            auto ago = message.Find(L"closedMsAgo");
+            OnUiGone(std::max(1.0, ago ? ago->AsNumber().value_or(0) : 0));
+        }
+        else if (type == Link::Type::ResetAreas)
+        {
+            m_arranger->ResetAreas();
+        }
         else if (type == Link::Type::Quit)
         {
             Quit();
@@ -378,11 +410,36 @@ namespace EmberPane
         return m;
     }
 
+    Link::Message Host::MakeAreas() const
+    {
+        auto m = Link::Make(Link::Type::Areas);
+        m.Set(L"preset", static_cast<int>(m_arranger->Preset()));
+
+        if (auto picture = m_arranger->ResizedPicture())
+        {
+            auto areas = Link::Message::MakeArray();
+            for (auto const& area : *picture)
+            {
+                auto edges = Link::Message::MakeArray();
+                for (int edge : { area.Left, area.Top, area.Right, area.Bottom })
+                    edges.Append(edge);
+                areas.Append(std::move(edges));
+            }
+            m.Set(L"areas", std::move(areas));
+        }
+
+        return m;
+    }
+
     Link::Message Host::MakeState() const
     {
         auto m = MakeWindows();
         m.Set(L"type", Link::Type::State);
         m.Set(L"settings", m_settings.ToJson());
+
+        auto areas = MakeAreas();
+        if (auto preset = areas.Find(L"preset")) m.Set(L"preset", *preset);
+        if (auto picture = areas.Find(L"areas")) m.Set(L"areas", *picture);
         return m;
     }
 

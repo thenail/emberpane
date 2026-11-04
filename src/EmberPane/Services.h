@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "Event.h"
+#include "Geometry.h"
 #include "Managed/WindowMirror.h"
 #include "Settings.h"
 
@@ -20,6 +21,15 @@ namespace EmberPane
 
         /// Where things stand, for the panel to show; empty means all is well.
         Event<std::wstring const&> StatusChanged;
+
+        /// The host's layout in use, and its areas on the picture's square
+        /// when they have been resized away from the preset's; empty when not.
+        Core::LayoutPreset AreasPreset{ Core::LayoutPreset::TwoColumns };
+        std::vector<Core::Rect> ResizedAreas;
+        Event<> AreasChanged;
+
+        /// Puts the resized areas back as the preset has them.
+        std::function<void()> ResetAreas;
 
         /// Opening Settings is asked for from the flyout's gear and from the
         /// tray icon; the App owns the window.

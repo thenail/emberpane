@@ -270,4 +270,7 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>Quatro áreas</value>
   </data>
+  <data name="LayoutResetSizes" xml:space="preserve">
+    <value>Repor tamanhos</value>
+  </data>
 </root>

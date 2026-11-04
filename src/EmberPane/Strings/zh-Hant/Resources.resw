@@ -270,4 +270,7 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>四個區域</value>
   </data>
+  <data name="LayoutResetSizes" xml:space="preserve">
+    <value>重設大小</value>
+  </data>
 </root>

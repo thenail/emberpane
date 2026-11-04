@@ -21,6 +21,9 @@ namespace winrt::EmberPane::implementation
 
         bool IsOpen() const { return m_visible; }
 
+        /// How long ago it last began to close.
+        double MsSinceClosed() const;
+
         /// Raised once the panel has finished sliding away.
         std::function<void()> Hidden;
 
@@ -90,6 +93,9 @@ namespace winrt::EmberPane::implementation
 
         std::wstring m_status;
         std::vector<Microsoft::UI::Xaml::Controls::Canvas> m_pictures;
+
+        /// Each layout's reset, shown while its areas are resized.
+        std::vector<Microsoft::UI::Xaml::Controls::Button> m_resets;
 
         struct Animation
         {

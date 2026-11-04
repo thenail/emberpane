@@ -270,4 +270,7 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>Fire områder</value>
   </data>
+  <data name="LayoutResetSizes" xml:space="preserve">
+    <value>Nulstil størrelser</value>
+  </data>
 </root>

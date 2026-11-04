@@ -366,10 +366,12 @@ This is the first thing the host does once arranging is on, whether at startup o
 
 1. `EnumWindows` lists every top-level window, frontmost first.
 2. Each is classified (section 7.2). Tiled windows go into the tree for the monitor they are mostly on (`MonitorFromWindow`, nearest) and their virtual desktop.
-3. In that order, each window goes to the area with the fewest windows, so the frontmost windows are the ones on show, and the rest share areas behind them.
+3. A window that is mostly inside one area already, at least 60% of it, stays in that area, so windows arranged by an earlier run keep their places across a restart. The rest, in that order, each go to the area with the fewest windows, so the frontmost windows are the ones on show, and the rest share areas behind them.
 4. Windows are then placed as in section 8.4. A window is never relaunched, and its app sees only an ordinary move and resize.
 
 Three kinds of window are treated differently: minimized windows are tracked but not inserted until restored; maximized windows are inserted but not moved until the user restores them; windows that cannot be moved (section 8.8) float.
+
+Once in an area, a window stays in it until the user moves it. When a window closes, is minimized or floats, the area it leaves keeps its place, even with nothing in it; no window is moved over from another area to fill it.
 
 Turning arranging off leaves every window where it is. Windows goes on treating them as normal windows.
 
@@ -430,7 +432,8 @@ Do not use `BeginDeferWindowPos`. It applies a batch as a unit, so one elevated 
 | Read-back | Meaning | Action |
 | --- | --- | --- |
 | Within tolerance | Done | Re-measure the inset, in case the DPI changed |
-| Larger than asked | The app has a minimum size | Record it in `Minimum`, re-arrange the tree |
+| Larger than asked, the first time | Perhaps a minimum, perhaps an app restoring its saved size late | Ask again; at most twice for a size that keeps changing |
+| Larger than asked, again at the same size | The app has a minimum size | Record it in `Minimum`, re-arrange the tree |
 | Smaller than asked | A maximum size or a character grid, as in terminals | Accept it; do not retry |
 | Unmoved | It cannot be moved | See section 8.8 |
 | On a monitor of another DPI, or otherwise wrong | The app rescaled during the move | Place it again, at most twice |
@@ -479,7 +482,7 @@ The gap setting therefore stops at 12 DIPs, the widest gap with no dead pixels s
 
 **Dropping a window out of the layout.** Near a gap between two areas, nothing is frosted. The zone is the gap and a third of each neighbouring area's length across it (`LayoutTree::NearGap`), so it is there even with no gap, and the margin at the screen edge is not part of it. A window let go there leaves the layout and floats where it was dropped, until it closes. Dragged again, it shows the areas like a tiled window: near a gap it goes on floating, and dropped on an area it rejoins the layout there. Windows floating for any other reason, by an app's rule or because they kept moving themselves, are not offered this.
 
-Dropping puts the window in that area, in front of whatever is there. If that leaves the area it came from empty, a window from the area it joined moves over, so with one window in each the two trade places. An area with nothing in it stays empty and can be dropped on.
+Dropping puts the window in that area, in front of whatever is there. Nothing else moves: the windows already in that area stay there, behind it, and the area it came from stays as it is, even with nothing in it. An area with nothing in it stays empty and can be dropped on.
 
 - It works across monitors, since each tile belongs to whichever tree is under the cursor.
 - A drag is a move once opposite edges have both moved, so a resize, which always leaves one edge of each pair still, never shows the areas. Size cannot be the test. Windows gives a window it snapped its old size as soon as a drag begins, and does the same for one pulled out of maximized, and a change of DPI between monitors resizes a window on the way. Judging by size missed a real drag of every such window once.
@@ -590,7 +593,8 @@ Left-click toggles the panel; right-click opens Settings, as `TrayIcon` already 
 └────────────────────────────────────────┘
 ```
 
-- The panel offers layouts and nothing else, not windows. Each is a small picture drawn from the preset's own areas, so it cannot disagree with what it does, and the one in use is in the accent colour.
+- The panel offers layouts and nothing else, not windows. Each is a small picture drawn from the preset's own areas, so it cannot disagree with what it does, and the one in use is in the accent colour. There are no captions; the name is the picture's tooltip and its name to a screen reader.
+- The layout in use is drawn as its areas stand. Once an edge or a gap has been dragged, it shows the new sizes, and a small reset button sits on its top-right corner. Pressing it puts that layout's areas back as the preset has them; every window keeps its area. The layout shown and reset is the one on the taskbar's monitor, on the desktop being looked at.
 - Pressing a layout applies it to every monitor at once and turns arranging on, since choosing one says that you want it. Besides that, arranging is turned on and off in Settings, along with the busy borders and the gap.
 - Changing layout deals the windows into the new areas frontmost first, so the windows in use are the ones on show. Sizes dragged in the old layout are not kept.
 - The busy words have left the panel with the window list. The border colours stay, and the key in Settings still gives each colour its word.
@@ -693,8 +697,10 @@ Same transport as AstroDimmer: JSON objects with a `type`, sent by `WM_COPYDATA`
 | --- | --- | --- |
 | UI to host | `hello` | `hwnd` |
 | | `saveSettings` | `settings`. Also carries the layout chosen in the panel. |
+| | `resetAreas` | Puts the areas of the layout the panel shows back as the preset has them |
 | | `quit` | |
-| Host to UI | `state` | `settings`, `windows`, `status` |
+| Host to UI | `state` | `settings`, `windows`, `status`, and those of `areas` |
+| | `areas` | `preset`; `areas`, each `[left, top, right, bottom]` on a 1000 by 1000 square, only when they have been resized. Sent when areas change and before each `toggle`. |
 | | `windows` | `windows`: `app`, `exe`, for choosing an app in Settings |
 | | `settings` | `settings` |
 | | `status` | `text` |

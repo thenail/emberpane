@@ -52,9 +52,33 @@ namespace EmberPane::Core
 
     std::vector<Rect> PictureOf(LayoutPreset preset)
     {
-        std::vector<Rect> areas;
-        for (auto const& tile : MakeLayout(preset).Arrange({ 0, 0, 1000, 1000 }, 0, {}))
-            areas.push_back(tile.Bounds);
-        return areas;
+        return PictureOf(MakeLayout(preset));
+    }
+
+    std::vector<Rect> PictureOf(LayoutTree const& areas)
+    {
+        std::vector<Rect> picture;
+        for (auto const& tile : areas.Arrange({ 0, 0, 1000, 1000 }, 0, {}))
+            picture.push_back(tile.Bounds);
+        return picture;
+    }
+
+    bool IsResized(LayoutTree const& areas, LayoutPreset preset)
+    {
+        // A tenth of a percent is rounding, or a drag let go where it began.
+        constexpr int Sliver = 2;
+
+        auto now = PictureOf(areas);
+        auto was = PictureOf(preset);
+        if (now.size() != was.size()) return true;
+
+        auto within = [](int a, int b) { return std::abs(a - b) <= Sliver; };
+        for (size_t i = 0; i < now.size(); ++i)
+        {
+            if (!within(now[i].Left, was[i].Left) || !within(now[i].Top, was[i].Top) ||
+                !within(now[i].Right, was[i].Right) || !within(now[i].Bottom, was[i].Bottom))
+                return true;
+        }
+        return false;
     }
 }

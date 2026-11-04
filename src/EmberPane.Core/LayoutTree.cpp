@@ -61,6 +61,15 @@ namespace EmberPane::Core
         }
 
         template <typename Visit>
+        void EachSplit(Node* node, Visit const& visit)
+        {
+            if (!node || node->IsLeaf()) return;
+            visit(*node);
+            EachSplit(node->First.get(), visit);
+            EachSplit(node->Second.get(), visit);
+        }
+
+        template <typename Visit>
         void EachLeaf(Node const* node, Visit const& visit)
         {
             if (!node) return;
@@ -461,5 +470,23 @@ namespace EmberPane::Core
 
         auto rect = RectOf(node, area, gap, minimums);
         SetFirstLength(*node, position - Start(rect, node->Direction), rect, gap, minimums);
+    }
+
+    std::vector<double> LayoutTree::Ratios() const
+    {
+        std::vector<double> ratios;
+        EachSplit(m_root.get(), [&](Node& split) { ratios.push_back(split.Ratio); });
+        return ratios;
+    }
+
+    bool LayoutTree::SetRatios(std::vector<double> const& ratios)
+    {
+        if (ratios.size() != Ratios().size()) return false;
+        for (double ratio : ratios)
+            if (!(ratio > 0 && ratio < 1)) return false;
+
+        size_t next = 0;
+        EachSplit(m_root.get(), [&](Node& split) { split.Ratio = ratios[next++]; });
+        return true;
     }
 }

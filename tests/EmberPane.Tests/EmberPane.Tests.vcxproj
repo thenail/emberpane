@@ -65,6 +65,7 @@
     <ClCompile Include="SettingsTests.cpp" />
     <ClCompile Include="LayoutTreeTests.cpp" />
     <ClCompile Include="LayoutPresetsTests.cpp" />
+    <ClCompile Include="LayoutStateTests.cpp" />
     <ClCompile Include="WindowRulesTests.cpp" />
     <ClCompile Include="CpuMeterTests.cpp" />
     <ClCompile Include="HeatRampTests.cpp" />

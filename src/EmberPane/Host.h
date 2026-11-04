@@ -36,12 +36,17 @@ namespace EmberPane
         /// Starts EmberPane.exe --ui, which opens with this action.
         void LaunchUi(wchar_t const* action);
         void OnUiConnected(HWND hwnd);
-        void OnUiGone();
+        /// The UI has gone, or said it is going. closedMsAgo is how long ago
+        /// the panel began to close, for the guard against the closing click.
+        void OnUiGone(double closedMsAgo = 0);
 
         void OnMessage(Link::Message const& message);
         void Send(Link::Message const& message);
         Link::Message MakeState() const;
         Link::Message MakeWindows() const;
+
+        /// The layout the panel shows, as resized; see Arranger::ResizedPicture.
+        Link::Message MakeAreas() const;
 
         /// Every SampleSeconds, with nothing changing as with everything.
         void OnTick();

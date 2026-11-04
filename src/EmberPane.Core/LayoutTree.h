@@ -105,6 +105,14 @@ namespace EmberPane::Core
         /// is where the gap's first edge should go.
         void MoveSplit(SplitId split, int position, Rect const& area, int gap, MinimumSizes const& minimums);
 
+        /// Each split's share, outermost first. With the tree's shape, that is
+        /// all a resize changes, so it is what is kept across a restart.
+        std::vector<double> Ratios() const;
+
+        /// Puts back what Ratios gave, on a tree of the same shape. False, with
+        /// nothing changed, when they do not fit it.
+        bool SetRatios(std::vector<double> const& ratios);
+
         /// Defined in the .cpp, where its helpers live.
         struct Node;
 

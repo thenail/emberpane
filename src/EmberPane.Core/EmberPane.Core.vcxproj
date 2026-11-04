@@ -76,6 +76,7 @@
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="LayoutTree.h" />
     <ClInclude Include="LayoutPresets.h" />
+    <ClInclude Include="LayoutState.h" />
     <ClInclude Include="WindowRules.h" />
     <ClInclude Include="CpuMeter.h" />
     <ClInclude Include="HeatRamp.h" />
@@ -90,6 +91,7 @@
     <ClCompile Include="FlyoutPlacement.cpp" />
     <ClCompile Include="LayoutTree.cpp" />
     <ClCompile Include="LayoutPresets.cpp" />
+    <ClCompile Include="LayoutState.cpp" />
     <ClCompile Include="WindowRules.cpp" />
     <ClCompile Include="CpuMeter.cpp" />
     <ClCompile Include="HeatRamp.cpp" />
