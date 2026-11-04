@@ -341,6 +341,8 @@ Activity ActivityFor(double rate);
 | 2.0 | Very busy | Orange |
 | 4.0 | Flat out | Red |
 
+A frame already coloured keeps blue down to 0.01, half the first stop. An idle app can sit right at 0.02, and its frame would otherwise blink on and off with each tick.
+
 Those are the colours of the default theme. Settings offers four, with the same stops:
 
 | Theme | Light | Working | Busy | Very busy | Flat out |
@@ -537,6 +539,7 @@ void FrameService::Release(ManagedWindow& window);
 | Window | Border |
 | --- | --- |
 | Tile or Float, rate at or above idle | Ramp colour |
+| Already coloured, rate from 0.01 up to idle | First stop's colour |
 | Idle, or usage unknown | `DWMWA_COLOR_DEFAULT` |
 | Minimized, Maximized, Fullscreen | Nothing written |
 | Frames turned off | `DWMWA_COLOR_DEFAULT`, once |
@@ -802,7 +805,7 @@ The first budgets, 1 ms and 20 ms for ticks and a 15 MB working set, were estima
 | Minimums | `A_window_too_large_for_its_tile_widens_it`; `A_full_tree_refuses_a_new_window`; `An_impossible_layout_still_arranges` |
 | `WindowRules` | Each row of the table in section 7.2, and `A_rule_can_tile_an_app_with_no_caption` |
 | `CpuMeter` | `A_child_exiting_does_not_make_usage_negative`; `A_child_joining_does_not_spike_usage`; `A_gap_clears_the_window`; `Two_cores_read_as_two`; `A_first_sample_is_not_known` |
-| `HeatRamp` | `Below_idle_uses_the_system_border`; `Each_stop_gives_its_colour`; `A_small_change_stays_on_one_level`; `Each_word_starts_at_its_stop` |
+| `HeatRamp` | `Below_idle_uses_the_system_border`; `A_lit_frame_stays_lit_just_below_idle`; `Each_stop_gives_its_colour`; `A_small_change_stays_on_one_level`; `Each_word_starts_at_its_stop` |
 | Dragging | `Dropping_beside_a_window_splits_it_on_that_side`; `The_place_it_left_closes_up`; `A_window_can_move_to_another_tree`; `A_window_cannot_be_dropped_on_itself` |
 | `Settings` | Round trip, `A_corrupt_file_gives_defaults`, unknown fields ignored |
 

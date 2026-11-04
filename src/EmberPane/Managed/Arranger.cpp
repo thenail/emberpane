@@ -2,6 +2,7 @@
 #include "Managed/Arranger.h"
 #include "CommandLine.h"
 #include "Native/WindowDocking.h"
+#include "Native/WindowFacts.h"
 #include "Trace.h"
 
 using namespace std::chrono_literals;
@@ -1303,11 +1304,19 @@ namespace EmberPane::Managed
 
     bool Arranger::GapIsClear(Gap const& gap, Core::Pixel point) const
     {
+        auto layout = m_layouts.find(gap.Tree);
+
+        // A member maximized or fullscreen stays in the layout but covers all
+        // of it. Read live: the tracker sees it only on the reconcile tick.
+        // Asked before the window under the cursor, which may be the line.
+        if (layout != m_layouts.end())
+            for (auto const& [hwnd, area] : layout->second.Members)
+                if (!IsIconic(hwnd) && (IsZoomed(hwnd) || Native::IsFullscreen(hwnd))) return false;
+
         // Otherwise a floating or maximized window is covering the gap.
         HWND under = GetAncestor(WindowFromPoint({ point.X, point.Y }), GA_ROOT);
         if (m_gapHandle->Hwnd() && under == m_gapHandle->Hwnd()) return true;
 
-        auto layout = m_layouts.find(gap.Tree);
         if (layout != m_layouts.end() && layout->second.Members.contains(under)) return true;
 
         wchar_t name[32]{};

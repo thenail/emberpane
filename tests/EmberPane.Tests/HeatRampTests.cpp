@@ -33,6 +33,20 @@ TEST(Below_idle_uses_the_system_border)
     CHECK(!ColorFor(0.02).UseSystemDefault);
 }
 
+TEST(A_lit_frame_stays_lit_just_below_idle)
+{
+    auto first = ColorFor(0.02);
+    CHECK((ColorFor(0.015, ColorTheme::Bright, true) == first));
+    CHECK((ColorFor(IdleRelease, ColorTheme::Bright, true) == first));
+    CHECK(ColorFor(0.009, ColorTheme::Bright, true).UseSystemDefault);
+
+    // Not lit yet: the first stop is still where colour starts.
+    CHECK(ColorFor(0.015, ColorTheme::Bright, false).UseSystemDefault);
+
+    // Above idle, being lit changes nothing.
+    CHECK((ColorFor(0.5, ColorTheme::Bright, true) == ColorFor(0.5)));
+}
+
 TEST(Each_stop_gives_its_colour)
 {
     CHECK((ColorFor(0.02) == FrameColor{ false, 0x4C, 0x9B, 0xE8 }));

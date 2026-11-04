@@ -177,7 +177,8 @@ namespace EmberPane
 
             // Not known reads as resting: a colour must mean something.
             bool show = m_settings.Frames.Enabled && usage.Known;
-            window.Heat = show ? Core::ColorFor(usage.Rate, m_settings.Frames.Theme) : Core::FrameColor{};
+            bool lit = !window.Heat.UseSystemDefault;
+            window.Heat = show ? Core::ColorFor(usage.Rate, m_settings.Frames.Theme, lit) : Core::FrameColor{};
         }
 
         m_rings->Update();

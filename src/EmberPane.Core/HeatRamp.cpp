@@ -71,6 +71,12 @@ namespace EmberPane::Core
         return { false, Blend(a.R, b.R, amount), Blend(a.G, b.G, amount), Blend(a.B, b.B, amount) };
     }
 
+    FrameColor ColorFor(double rate, ColorTheme theme, bool lit)
+    {
+        if (lit && rate >= IdleRelease) rate = std::max(rate, Stops[0].Rate);
+        return ColorFor(rate, theme);
+    }
+
     Activity ActivityFor(double rate)
     {
         auto activity = Activity::Resting;

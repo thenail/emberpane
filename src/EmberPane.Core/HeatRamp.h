@@ -60,6 +60,14 @@ namespace EmberPane::Core
     /// tick makes no DWM call.
     FrameColor ColorFor(double rate, ColorTheme theme = ColorTheme::Bright);
 
+    /// A frame already coloured keeps its colour down to here, half the first
+    /// stop. An idle app can sit right at the stop, VS Code on a laptop does,
+    /// and would otherwise blink between its colour and Windows' border.
+    inline constexpr double IdleRelease = 0.01;
+
+    /// ColorFor, for a frame that may be coloured already.
+    FrameColor ColorFor(double rate, ColorTheme theme, bool lit);
+
     /// The word changes exactly at each stop.
     Activity ActivityFor(double rate);
 }
