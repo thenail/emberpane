@@ -2,7 +2,9 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 #include "Managed/Arranger.h"
 #include "Managed/Overlays.h"
 #include "Managed/WindowTracker.h"
@@ -30,6 +32,10 @@ namespace EmberPane::Managed
     private:
         /// Something on screen is changing: frames follow it for a moment.
         void Follow();
+
+        /// A window not tracked here makes a hole in a band, or did, or may
+        /// now: one shown, hidden or moved near a frame.
+        bool Touches(HWND hwnd) const;
         void OnWatch();
         void SetHeld(bool held);
 
@@ -38,6 +44,12 @@ namespace EmberPane::Managed
         Core::AppSettings const& m_settings;
 
         std::map<std::wstring, std::unique_ptr<FrameLayer>> m_layers;
+
+        /// As last drawn: the windows with a band, the windows making holes in
+        /// the bands, and how far out each band can reach.
+        std::set<HWND> m_framed;
+        std::set<HWND> m_covering;
+        std::vector<Core::Rect> m_reach;
 
         winrt::Windows::System::DispatcherQueueTimer m_watch{ nullptr };
         ULONGLONG m_quietAt{ 0 };

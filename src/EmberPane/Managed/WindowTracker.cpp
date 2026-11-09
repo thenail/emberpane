@@ -157,6 +157,8 @@ namespace EmberPane::Managed
 
     void WindowTracker::OnEvent(DWORD event, HWND hwnd)
     {
+        bool tracked = m_windows.contains(hwnd);
+
         switch (event)
         {
         case EVENT_OBJECT_SHOW:
@@ -203,6 +205,15 @@ namespace EmberPane::Managed
             }
             break;
         }
+
+        if (tracked || m_windows.contains(hwnd)) return;
+
+        // Controls inside windows show and hide all the time. A window already
+        // destroyed cannot be told apart, and WinUI's tooltips are destroyed
+        // with no hide reported first.
+        if (IsWindow(hwnd) && GetAncestor(hwnd, GA_ROOT) != hwnd) return;
+
+        OtherChanged(hwnd);
     }
 
     void WindowTracker::Reconcile()

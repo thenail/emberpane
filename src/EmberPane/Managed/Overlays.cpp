@@ -330,11 +330,25 @@ namespace EmberPane::Managed
             int green = GetGValue(band.Color);
             int red = GetRValue(band.Color);
 
+            std::vector<RECT> holes;
+            for (auto const& hole : band.Holes)
+            {
+                RECT local{ hole.Left - origin.Left, hole.Top - origin.Top, hole.Right - origin.Left,
+                            hole.Bottom - origin.Top };
+                RECT inside{};
+                if (IntersectRect(&inside, &local, &area))
+                    holes.push_back(inside);
+            }
+
             for (int y = area.top; y < area.bottom; ++y)
             {
                 BYTE* pixel = bits + y * stride + static_cast<size_t>(area.left) * 4;
                 for (int x = area.left; x < area.right; ++x, pixel += 4)
                 {
+                    POINT at{ x, y };
+                    if (std::any_of(holes.begin(), holes.end(), [&](RECT const& hole) { return PtInRect(&hole, at); }))
+                        continue;
+
                     float d = RoundedDistance(x + 0.5f, y + 0.5f, left, top, right, bottom, radius);
                     float coverage = std::clamp(std::min(d - band.Inner, band.Outer - d) + 0.5f, 0.0f, 1.0f);
                     if (coverage <= 0) continue;

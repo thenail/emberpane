@@ -88,6 +88,11 @@ namespace EmberPane::Managed
             COLORREF Color{};
             int Radius{ 0 };
 
+            /// Left undrawn, in screen pixels: windows in front of this one,
+            /// such as its own tooltips and menus. The layer is in front of
+            /// them all, and the band would cross what should cover it.
+            std::vector<Core::Rect> Holes;
+
             bool operator==(Band const&) const = default;
         };
 

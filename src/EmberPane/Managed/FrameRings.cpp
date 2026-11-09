@@ -37,6 +37,84 @@ namespace EmberPane::Managed
         {
             return RGB(color.R, color.G, color.B);
         }
+
+        bool Overlap(Core::Rect const& a, Core::Rect const& b)
+        {
+            return a.Left < b.Right && b.Left < a.Right && a.Top < b.Bottom && b.Top < a.Bottom;
+        }
+
+        /// A window that hides what is behind it: shown, on this desktop, and
+        /// not invisible. Topmost windows are in front of the frame layer
+        /// anyway, and the layer and the other click-through overlays here
+        /// cover nothing.
+        bool Covers(HWND hwnd)
+        {
+            if (!IsWindowVisible(hwnd) || IsIconic(hwnd)) return false;
+
+            auto ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+            if (ex & WS_EX_TOPMOST) return false;
+
+            DWORD process = 0;
+            GetWindowThreadProcessId(hwnd, &process);
+            if (process == GetCurrentProcessId() && (ex & WS_EX_TRANSPARENT)) return false;
+
+            BYTE alpha = 255;
+            DWORD flags = 0;
+            if ((ex & WS_EX_LAYERED) && GetLayeredWindowAttributes(hwnd, nullptr, &alpha, &flags) &&
+                (flags & LWA_ALPHA) && alpha == 0)
+                return false;
+
+            DWORD cloaked = 0;
+            DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
+            return cloaked == 0;
+        }
+
+        /// What a window hides. A WinUI popup, such as a tooltip or a menu, is
+        /// drawn by the app inside a window with room around it for its shadow,
+        /// and Windows cannot say where. The margins were measured on a
+        /// tooltip at 150% in November 2026, rounded down so that the hole is
+        /// never smaller than the bubble.
+        Core::Rect CoveredBy(HWND hwnd)
+        {
+            auto rect = VisibleFrame(hwnd);
+
+            wchar_t name[64]{};
+            GetClassNameW(hwnd, name, 64);
+            if (wcscmp(name, L"Microsoft.UI.Content.PopupWindowSiteBridge") != 0) return rect;
+
+            UINT dpi = GetDpiForWindow(hwnd);
+            auto px = [dpi](int dip) { return dip * static_cast<int>(dpi) / 96; };
+            Core::Rect bubble{ rect.Left + px(5), rect.Top + px(3), rect.Right - px(5), rect.Bottom - px(9) };
+            return bubble.Width() > 0 && bubble.Height() > 0 ? bubble : rect;
+        }
+
+        struct Cover
+        {
+            HWND Hwnd{};
+            Core::Rect Rect;
+        };
+
+        /// The windows that cover something, front to back, as far as the last
+        /// of `wanted`, and for each of `wanted` how many of them are in front
+        /// of it.
+        std::vector<Cover> CoversDownTo(std::set<HWND> const& wanted, std::map<HWND, size_t>& inFront)
+        {
+            std::vector<HWND> order;
+            EnumWindows([](HWND hwnd, LPARAM list)
+            {
+                reinterpret_cast<std::vector<HWND>*>(list)->push_back(hwnd);
+                return TRUE;
+            }, reinterpret_cast<LPARAM>(&order));
+
+            std::vector<Cover> covers;
+            for (auto hwnd : order)
+            {
+                if (inFront.size() == wanted.size()) break;
+                if (wanted.contains(hwnd)) inFront[hwnd] = covers.size();
+                if (Covers(hwnd)) covers.push_back({ hwnd, CoveredBy(hwnd) });
+            }
+            return covers;
+        }
     }
 
     FrameRings::FrameRings(winrt::Windows::System::DispatcherQueue const& dispatcher, WindowTracker& tracker,
@@ -53,6 +131,7 @@ namespace EmberPane::Managed
         m_tracker.Activated.Add([this](HWND) { Follow(); });
         m_tracker.DragStarted.Add([this](HWND) { Follow(); });
         m_tracker.DragEnded.Add([this](HWND) { Follow(); });
+        m_tracker.OtherChanged.Add([this](HWND hwnd) { if (Touches(hwnd)) Follow(); });
         m_arranger.Moved.Add([this] { Follow(); });
         m_arranger.Rearranged.Add([this] { Follow(); });
     }
@@ -84,9 +163,27 @@ namespace EmberPane::Managed
         std::map<std::wstring, HWND> firsts;
         std::set<HWND> behind;
 
+        m_covering.clear();
+        m_reach.clear();
+        m_framed.clear();
+
         if (frames.Enabled)
         {
-            for (auto const& shown : m_arranger.OnShow())
+            auto onShow = m_arranger.OnShow();
+
+            // The layer is in front of the layout's front window, and so of
+            // everything behind it: a window's own tooltips and menus, which
+            // sit just in front of it, and other windows between. Each band
+            // leaves out what is in front of its window. Where that is also in
+            // front of the layer, the hole is hidden beneath it.
+            std::set<HWND> framed;
+            for (auto const& shown : onShow)
+                if (!shown.Behind) framed.insert(shown.Hwnd);
+
+            std::map<HWND, size_t> inFront;
+            auto covers = framed.empty() ? std::vector<Cover>{} : CoversDownTo(framed, inFront);
+
+            for (auto const& shown : onShow)
             {
                 if (shown.Behind)
                 {
@@ -114,11 +211,29 @@ namespace EmberPane::Managed
                 auto rect = VisibleFrame(shown.Hwnd);
                 int radius = MulDiv(roundDip, shown.Dpi, 96);
 
+                int out = std::max({ plan.ColorTo, plan.DarkTo, 0 }) + 1;
+                Core::Rect reach{ rect.Left - out, rect.Top - out, rect.Right + out, rect.Bottom + out };
+                m_reach.push_back(reach);
+                m_framed.insert(shown.Hwnd);
+
+                std::vector<Core::Rect> holes;
+                if (auto ahead = inFront.find(shown.Hwnd); ahead != inFront.end())
+                {
+                    for (size_t i = 0; i < ahead->second; ++i)
+                    {
+                        if (!Overlap(covers[i].Rect, reach)) continue;
+                        holes.push_back(covers[i].Rect);
+                        m_covering.insert(covers[i].Hwnd);
+                    }
+                }
+
                 auto& scene = scenes[shown.Monitor];
                 scene.Area = shown.Bounds;
                 if (plan.DarkTo > plan.DarkFrom)
-                    scene.Bands.push_back({ rect, plan.DarkFrom, plan.DarkTo, ToColorRef(Core::DarkLine), radius });
-                scene.Bands.push_back({ rect, plan.ColorFrom, plan.ColorTo, ToColorRef(window->second.Heat), radius });
+                    scene.Bands.push_back(
+                        { rect, plan.DarkFrom, plan.DarkTo, ToColorRef(Core::DarkLine), radius, holes });
+                scene.Bands.push_back(
+                    { rect, plan.ColorFrom, plan.ColorTo, ToColorRef(window->second.Heat), radius, holes });
             }
         }
 
@@ -167,6 +282,19 @@ namespace EmberPane::Managed
             if (!m_following)
                 layer->Trim();
         }
+    }
+
+    bool FrameRings::Touches(HWND hwnd) const
+    {
+        if (m_covering.contains(hwnd)) return true;
+        if (m_reach.empty() || !IsWindowVisible(hwnd)) return false;
+
+        // A window's own tooltips and menus are shown first and put in place
+        // after, which nothing reports.
+        if (HWND owner = GetWindow(hwnd, GW_OWNER); owner && m_framed.contains(owner)) return true;
+
+        auto rect = VisibleFrame(hwnd);
+        return std::any_of(m_reach.begin(), m_reach.end(), [&](Core::Rect const& reach) { return Overlap(rect, reach); });
     }
 
     void FrameRings::Follow()

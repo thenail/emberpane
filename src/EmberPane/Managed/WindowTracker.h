@@ -64,6 +64,11 @@ namespace EmberPane::Managed
         Event<HWND> DragStarted;
         Event<HWND> DragEnded;
 
+        /// A top-level window not tracked here was shown, hidden, moved or
+        /// brought forward: a tooltip, a menu, a dialog, an ignored app.
+        /// Hidden, it may already be gone.
+        Event<HWND> OtherChanged;
+
     private:
         void OnEvent(DWORD event, HWND hwnd);
         void TryAdopt(HWND hwnd);
