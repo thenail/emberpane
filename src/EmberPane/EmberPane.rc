@@ -5,8 +5,8 @@ IDI_APP ICON "Assets/EmberPane.ico"
 // The name Windows shows for the exe: Task Manager, the startup apps list,
 // and the file's properties. Without it they fall back to "EmberPane.exe".
 1 VERSIONINFO
-FILEVERSION 1,1,3,0
-PRODUCTVERSION 1,1,3,0
+FILEVERSION 1,1,4,0
+PRODUCTVERSION 1,1,4,0
 FILEOS 0x40004
 FILETYPE 0x1
 BEGIN
@@ -16,8 +16,8 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "Ember Pane"
             VALUE "ProductName", "Ember Pane"
-            VALUE "FileVersion", "1.1.3.0"
-            VALUE "ProductVersion", "1.1.3.0"
+            VALUE "FileVersion", "1.1.4.0"
+            VALUE "ProductVersion", "1.1.4.0"
             VALUE "OriginalFilename", "EmberPane.exe"
             VALUE "InternalName", "EmberPane"
         END
