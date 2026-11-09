@@ -110,6 +110,17 @@ namespace EmberPane::Core
         }
         root.Set(L"Layouts", std::move(layouts));
         root.Set(L"Returning", WindowsToJson(Returning));
+
+        auto apps = Json::Value::MakeArray();
+        for (auto const& app : Apps)
+        {
+            auto item = Json::Value::MakeObject();
+            item.Set(L"App", app.App);
+            item.Set(L"Preset", static_cast<int>(app.Preset));
+            item.Set(L"Area", static_cast<double>(app.Area));
+            apps.Append(std::move(item));
+        }
+        root.Set(L"Apps", std::move(apps));
         return root;
     }
 
@@ -140,6 +151,20 @@ namespace EmberPane::Core
         }
 
         state.Returning = WindowsFromJson(root.Find(L"Returning"));
+
+        if (auto apps = root.Find(L"Apps"))
+        {
+            for (auto const& item : apps->Items())
+            {
+                SavedApp app;
+                app.App = Text(item, L"App");
+                app.Preset = static_cast<LayoutPreset>(static_cast<int>(Number(item, L"Preset")));
+                app.Area = static_cast<WindowId>(Number(item, L"Area"));
+                if (!app.App.empty() && app.Area != 0)
+                    state.Apps.push_back(std::move(app));
+            }
+        }
+
         return state;
     }
 }

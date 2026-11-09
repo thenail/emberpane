@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Managed/Arranger.h"
 #include "CommandLine.h"
+#include "Native/ProcessTree.h"
 #include "Native/WindowDocking.h"
 #include "Native/WindowFacts.h"
 #include "Trace.h"
@@ -123,6 +124,11 @@ namespace EmberPane::Managed
         {
             if (auto root = Core::Json::ReadFile(Core::LayoutState::DefaultPath()))
                 m_saved = Core::LayoutState::FromJson(*root);
+
+            // Whatever boot it is from: these name apps, not windows.
+            if (m_saved)
+                for (auto const& app : m_saved->Apps)
+                    m_appAreas[{ app.App, app.Preset }] = app.Area;
         }
 
         if (Arranging())
@@ -442,6 +448,10 @@ namespace EmberPane::Managed
         if (!MonitorOf(key)) return;
 
         auto& layout = LayoutFor(key);
+
+        // With nothing better to go by, where the user last put this app.
+        if (!area)
+            area = RememberedArea(hwnd);
         layout.Members[hwnd] = area && layout.Areas.Contains(*area) ? *area : EmptiestArea(layout);
 
         Placement placement;
@@ -476,6 +486,44 @@ namespace EmberPane::Managed
         RemoveFromLayout(hwnd);
     }
 
+    std::wstring Arranger::AppOf(HWND hwnd) const
+    {
+        auto window = m_tracker.Windows().find(hwnd);
+        if (window == m_tracker.Windows().end()) return {};
+
+        auto name = window->second.ExeName;
+
+        // Every UWP app's frame belongs to ApplicationFrameHost; the app is
+        // the process behind it, once known.
+        if (_wcsicmp(name.c_str(), L"ApplicationFrameHost.exe") == 0)
+        {
+            auto path = Native::ProcessTree::ExePath(window->second.ProcessId);
+            name = path.substr(path.find_last_of(L'\\') + 1);
+            if (_wcsicmp(name.c_str(), L"ApplicationFrameHost.exe") == 0) return {};
+        }
+
+        for (auto& c : name) c = static_cast<wchar_t>(towlower(c));
+        return name;
+    }
+
+    std::optional<Core::WindowId> Arranger::RememberedArea(HWND hwnd) const
+    {
+        auto app = AppOf(hwnd);
+        if (app.empty()) return std::nullopt;
+
+        auto found = m_appAreas.find({ app, m_preset });
+        if (found == m_appAreas.end()) return std::nullopt;
+        return found->second;
+    }
+
+    void Arranger::RememberArea(HWND hwnd, Core::WindowId area)
+    {
+        auto app = AppOf(hwnd);
+        if (app.empty()) return;
+
+        m_appAreas[{ app, m_preset }] = area;
+    }
+
     void Arranger::Loosen(HWND hwnd)
     {
         Trace::Log(L"drag: dropped near a gap - out of the layout");
@@ -490,6 +538,7 @@ namespace EmberPane::Managed
         m_tracker.SetDisposition(hwnd, Core::Disposition::Tile);
 
         AddToLayout(hwnd, drop.Area, drop.Tree);
+        RememberArea(hwnd, drop.Area);
         if (m_placements.contains(hwnd))
             ArrangeTree(drop.Tree);
         UpdateGapWatch();
@@ -1111,6 +1160,9 @@ namespace EmberPane::Managed
         for (auto const& [hwnd, area] : m_returning)
             state.Returning.push_back(saved(hwnd, area));
 
+        for (auto const& [app, area] : m_appAreas)
+            state.Apps.push_back({ app.first, app.second, area });
+
         // Written only when it changed, which on most ticks it has not.
         auto text = Core::Json::Write(state.ToJson());
         if (text == m_savedText) return;
@@ -1467,6 +1519,9 @@ namespace EmberPane::Managed
         // Into another area it fills that area: its insets were for the old.
         if (from != drop.Tree || member->second != drop.Area)
             placement->second.Insets = {};
+
+        // The app's next window opens here too.
+        RememberArea(dragged, drop.Area);
 
         if (from == drop.Tree)
         {

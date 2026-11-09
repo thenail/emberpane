@@ -48,6 +48,8 @@ TEST(The_layout_state_survives_a_round_trip)
                               { 0.62, 0.4, 0.5 }, { { 0x1A2B3C, 4242, 1, { 0, 140, 0, 0 } }, { 0x2B3C4D, 4243, 3 } } });
     state.Layouts.push_back({ L"\\\\?\\DISPLAY#DEL4123#2", L"", { 0.5, 0.5, 0.5 }, {} });
     state.Returning.push_back({ 0x3C4D5E, 4244, 2 });
+    state.Apps.push_back({ L"kabelpost.exe", LayoutPreset::LargeAndSmall, 1 });
+    state.Apps.push_back({ L"code.exe", LayoutPreset::FourAreas, 3 });
 
     auto text = Json::Write(state.ToJson());
     auto parsed = Json::Parse(text);

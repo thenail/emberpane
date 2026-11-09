@@ -366,7 +366,9 @@ This is the first thing the host does once arranging is on, whether at startup o
 
 1. `EnumWindows` lists every top-level window, frontmost first.
 2. Each is classified (section 7.2). Tiled windows go into the tree for the monitor they are mostly on (`MonitorFromWindow`, nearest) and their virtual desktop.
-3. A window that is mostly inside one area already, at least 60% of it, stays in that area, so windows arranged by an earlier run keep their places across a restart. The rest, in that order, each go to the area with the fewest windows, so the frontmost windows are the ones on show, and the rest share areas behind them.
+3. A window that is mostly inside one area already, at least 60% of it, stays in that area, so windows arranged by an earlier run keep their places across a restart. The rest, in that order, go to the area the user last dropped a window of the same app in (below), or failing that each to the area with the fewest windows, so the frontmost windows are the ones on show, and the rest share areas behind them.
+
+**An app's area.** Dropping a window in an area, or back into the layout from floating, remembers that area for its app, under the preset in use: the exe's file name in lower case, or for a UWP frame the exe behind it once known. A window the app opens later, or one restored from minimized with no area of its own to return to, goes there instead of the emptiest area. Without this, a window put on the left opened on the right next time, since the right was emptier. The memory is kept in the layout state file under `Apps` and, unlike the window handles there, is used after a restart of Windows too. Only a drop sets it: an area found by the 60% rule or chosen as the emptiest says nothing about what the user wants.
 4. Windows are then placed as in section 8.4. A window is never relaunched, and its app sees only an ordinary move and resize.
 
 Three kinds of window are treated differently: minimized windows are tracked but not inserted until restored; maximized windows are inserted but not moved until the user restores them; windows that cannot be moved (section 8.8) float.

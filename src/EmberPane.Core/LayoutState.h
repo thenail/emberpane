@@ -40,6 +40,19 @@ namespace EmberPane::Core
         bool operator==(SavedLayout const&) const = default;
     };
 
+    /// The area an app's windows were last dropped in, under one preset. Its
+    /// windows open there. Unlike the rest, it outlives a restart of Windows:
+    /// it names an app and an area, never a window.
+    struct SavedApp
+    {
+        /// The exe's file name, in lower case.
+        std::wstring App;
+        LayoutPreset Preset{ LayoutPreset::TwoColumns };
+        WindowId Area{ 0 };
+
+        bool operator==(SavedApp const&) const = default;
+    };
+
     struct LayoutState
     {
         /// The areas are this preset's; under another, none of it applies.
@@ -52,6 +65,8 @@ namespace EmberPane::Core
 
         /// Minimized windows, and the area each returns to.
         std::vector<SavedWindow> Returning;
+
+        std::vector<SavedApp> Apps;
 
         bool operator==(LayoutState const&) const = default;
 

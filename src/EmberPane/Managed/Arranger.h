@@ -235,6 +235,14 @@ namespace EmberPane::Managed
         void RemoveFromLayout(HWND hwnd);
         void Float(HWND hwnd);
 
+        /// The exe that names a window's app, in lower case; empty when it
+        /// cannot be told, as for a UWP frame whose app has not shown yet.
+        std::wstring AppOf(HWND hwnd) const;
+
+        /// Where the user last dropped a window of this app, under this preset.
+        std::optional<Core::WindowId> RememberedArea(HWND hwnd) const;
+        void RememberArea(HWND hwnd, Core::WindowId area);
+
         /// Into the layout of the desktop it is on, if that is known now and
         /// is not the one it is in.
         void FollowDesktop(HWND hwnd);
@@ -320,6 +328,10 @@ namespace EmberPane::Managed
 
         /// Minimized windows, and the area to return to.
         std::map<HWND, Core::WindowId> m_returning;
+
+        /// The area each app's windows were last dropped in, per preset: a
+        /// window it opens later goes there. By exe name, in lower case.
+        std::map<std::pair<std::wstring, Core::LayoutPreset>, Core::WindowId> m_appAreas;
 
         /// Windows the user dropped near a gap: floating, until dropped on an
         /// area again. Kept while arranging is off, as their floating is.
