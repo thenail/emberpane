@@ -174,14 +174,18 @@ namespace EmberPane::Managed
             // The layer is in front of the layout's front window, and so of
             // everything behind it: a window's own tooltips and menus, which
             // sit just in front of it, and other windows between. Each band
-            // leaves out what is in front of its window. Where that is also in
-            // front of the layer, the hole is hidden beneath it.
-            std::set<HWND> framed;
+            // leaves out what is between the layer and its window. What is in
+            // front of the layer covers the band already, and a window being
+            // dragged is, so a hole for it would only be redrawn as it moves,
+            // and fall behind it.
+            std::set<HWND> marks;
             for (auto const& shown : onShow)
-                if (!shown.Behind) framed.insert(shown.Hwnd);
+                if (!shown.Behind) marks.insert(shown.Hwnd);
+            for (auto const& [monitor, layer] : m_layers)
+                if (layer->Hwnd()) marks.insert(layer->Hwnd());
 
             std::map<HWND, size_t> inFront;
-            auto covers = framed.empty() ? std::vector<Cover>{} : CoversDownTo(framed, inFront);
+            auto covers = marks.empty() ? std::vector<Cover>{} : CoversDownTo(marks, inFront);
 
             for (auto const& shown : onShow)
             {
@@ -216,10 +220,16 @@ namespace EmberPane::Managed
                 m_reach.push_back(reach);
                 m_framed.insert(shown.Hwnd);
 
+                // With no layer yet, everything in front of the window.
+                size_t from = 0;
+                if (auto layer = m_layers.find(shown.Monitor); layer != m_layers.end())
+                    if (auto at = inFront.find(layer->second->Hwnd()); at != inFront.end())
+                        from = at->second;
+
                 std::vector<Core::Rect> holes;
                 if (auto ahead = inFront.find(shown.Hwnd); ahead != inFront.end())
                 {
-                    for (size_t i = 0; i < ahead->second; ++i)
+                    for (size_t i = from; i < ahead->second; ++i)
                     {
                         if (!Overlap(covers[i].Rect, reach)) continue;
                         holes.push_back(covers[i].Rect);
