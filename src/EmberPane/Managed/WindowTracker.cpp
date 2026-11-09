@@ -43,6 +43,27 @@ namespace EmberPane::Managed
         Trace::Log(L"windows: " + std::to_wstring(m_windows.size()) + L" managed");
     }
 
+    std::wstring WindowTracker::DesktopOf(HWND hwnd)
+    {
+        auto desktop = m_desktops.DesktopOf(hwnd);
+        if (!desktop.empty()) return desktop;
+
+        // Windows would not say. Keyed by nothing, the window would get a
+        // layout of its own, arranged over the windows of the desktop it is
+        // really on. One on the desktop being looked at belongs with them.
+        if (m_desktops.OnCurrent(hwnd) != true) return {};
+
+        // The documented interface cannot name the current desktop, but any
+        // other window on it can.
+        for (auto const& [other, window] : m_windows)
+        {
+            if (other == hwnd || m_desktops.OnCurrent(other) != true) continue;
+            if (auto known = m_desktops.DesktopOf(other); !known.empty()) return known;
+        }
+
+        return {};
+    }
+
     WindowState WindowTracker::ReadState(HWND hwnd)
     {
         if (IsIconic(hwnd)) return WindowState::Minimized;

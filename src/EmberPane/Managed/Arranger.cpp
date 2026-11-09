@@ -33,6 +33,10 @@ namespace EmberPane::Managed
 
         constexpr int MinimumTileDip = 120;
 
+        /// An edge let go this close to its area's goes back to it, so that a
+        /// window can be given its whole area again by hand.
+        constexpr int RejoinEdgeDip = 16;
+
         /// How far into each neighbouring area a gap's drop zone reaches, as a
         /// share of that area's length across the gap: a third.
         constexpr double LooseShare = 1.0 / 3;
@@ -326,7 +330,16 @@ namespace EmberPane::Managed
         if (!key) return std::nullopt;
 
         auto layout = m_layouts.find(*key);
-        if (layout == m_layouts.end() || !Core::IsResized(layout->second.Areas, m_preset)) return std::nullopt;
+        if (layout == m_layouts.end()) return std::nullopt;
+
+        // A window made smaller than its area counts too: the reset is one
+        // way to give it the whole of it back.
+        bool inset = std::ranges::any_of(layout->second.Members, [&](auto const& member)
+        {
+            auto placement = m_placements.find(member.first);
+            return placement != m_placements.end() && !placement->second.Insets.Empty();
+        });
+        if (!inset && !Core::IsResized(layout->second.Areas, m_preset)) return std::nullopt;
 
         return Core::PictureOf(layout->second.Areas);
     }
@@ -344,6 +357,10 @@ namespace EmberPane::Managed
         // The same preset numbers its areas the same, so every window keeps
         // the one it is in.
         layout->second.Areas = Core::MakeLayout(m_preset);
+        for (auto const& [hwnd, area] : layout->second.Members)
+            if (auto placement = m_placements.find(hwnd); placement != m_placements.end())
+                placement->second.Insets = {};
+
         ArrangeTree(*key);
         BeginRearranging();
         AreasChanged();
@@ -563,7 +580,8 @@ namespace EmberPane::Managed
                 auto placement = m_placements.find(hwnd);
                 if (window == m_tracker.Windows().end() || placement == m_placements.end()) continue;
 
-                Place(window->second, placement->second, tile.Bounds);
+                Place(window->second, placement->second,
+                      Core::InsetTile(tile.Bounds, placement->second.Insets, space.Minimums.Default));
             }
         }
     }
@@ -941,10 +959,15 @@ namespace EmberPane::Managed
     {
         if (!m_running) return;
 
+        // There is no event for a window moved to another desktop.
+        FollowDesktop(hwnd);
+    }
+
+    void Arranger::FollowDesktop(HWND hwnd)
+    {
         auto found = m_placements.find(hwnd);
         if (found == m_placements.end()) return;
 
-        // There is no event for a window moved to another desktop.
         auto desktop = m_tracker.DesktopOf(hwnd);
         if (desktop.empty() || desktop == found->second.Tree.Desktop) return;
 
@@ -977,6 +1000,16 @@ namespace EmberPane::Managed
         }
 
         if (!m_running) return;
+
+        // Arranged before Windows would say which desktop it is on, or put back
+        // so by a run before this one: until it is told, it sits in a layout
+        // of its own, over the windows of the desktop it is really on.
+        std::vector<HWND> unplaced;
+        for (auto const& [hwnd, placement] : m_placements)
+            if (placement.Tree.Desktop.empty() && !(m_drag && m_drag->Hwnd == hwnd))
+                unplaced.push_back(hwnd);
+        for (auto hwnd : unplaced)
+            FollowDesktop(hwnd);
 
         std::vector<HWND> stubborn;
         std::set<TreeKey> corrected;
@@ -1066,7 +1099,11 @@ namespace EmberPane::Managed
             {
                 Core::SavedLayout entry{ key.Monitor, key.Desktop, layout.Areas.Ratios(), {} };
                 for (auto const& [hwnd, area] : layout.Members)
+                {
                     entry.Members.push_back(saved(hwnd, area));
+                    if (auto placement = m_placements.find(hwnd); placement != m_placements.end())
+                        entry.Members.back().Insets = placement->second.Insets;
+                }
                 state.Layouts.push_back(std::move(entry));
             }
         }
@@ -1132,8 +1169,9 @@ namespace EmberPane::Managed
                 if (!hwnd) continue;
 
                 AddToLayout(hwnd, member.Area, key);
-                if (m_placements.contains(hwnd))
+                if (auto placement = m_placements.find(hwnd); placement != m_placements.end())
                 {
+                    placement->second.Insets = member.Insets;
                     ++restored;
                     continue;
                 }
@@ -1426,6 +1464,10 @@ namespace EmberPane::Managed
 
         // Only the window dropped moves. The area it left stays, even empty,
         // and the windows already in the one it joined stay there, behind it.
+        // Into another area it fills that area: its insets were for the old.
+        if (from != drop.Tree || member->second != drop.Area)
+            placement->second.Insets = {};
+
         if (from == drop.Tree)
         {
             member->second = drop.Area;
@@ -1441,14 +1483,16 @@ namespace EmberPane::Managed
         ArrangeTree(from);
     }
 
-    void Arranger::ApplyResize(HWND hwnd, Placement& placement, RECT const& now)
+    std::vector<Core::Edge> Arranger::ApplyResize(HWND hwnd, Placement& placement, RECT const& now)
     {
+        std::vector<Core::Edge> unsplit;
+
         auto layout = m_layouts.find(placement.Tree);
         auto monitor = MonitorOf(placement.Tree);
-        if (layout == m_layouts.end() || !monitor) return;
+        if (layout == m_layouts.end() || !monitor) return unsplit;
 
         auto member = layout->second.Members.find(hwnd);
-        if (member == layout->second.Members.end()) return;
+        if (member == layout->second.Members.end()) return unsplit;
 
         RECT const& was = placement.Settled;
         RECT frame = VisibleFrame(hwnd);
@@ -1456,15 +1500,51 @@ namespace EmberPane::Managed
 
         auto move = [&](Core::Edge edge, int position)
         {
-            layout->second.Areas.MoveEdge(member->second, edge, position, space.Bounds, space.Gap, space.Minimums);
+            if (!layout->second.Areas.MoveEdge(member->second, edge, position, space.Bounds, space.Gap,
+                                               space.Minimums))
+                unsplit.push_back(edge);
         };
 
-        // Each edge that moved. An edge against the screen has no split, and
-        // the window goes back to it.
+        // Each edge that moved. An edge against the screen has no split; what
+        // becomes of it is up to the caller.
         if (!Near(now.left, was.left)) move(Core::Edge::Left, frame.left);
         if (!Near(now.top, was.top)) move(Core::Edge::Top, frame.top);
         if (!Near(now.right, was.right)) move(Core::Edge::Right, frame.right);
         if (!Near(now.bottom, was.bottom)) move(Core::Edge::Bottom, frame.bottom);
+
+        return unsplit;
+    }
+
+    void Arranger::KeepInsets(HWND hwnd, Placement& placement, std::vector<Core::Edge> const& edges)
+    {
+        auto layout = m_layouts.find(placement.Tree);
+        auto monitor = MonitorOf(placement.Tree);
+        if (layout == m_layouts.end() || !monitor || edges.empty()) return;
+
+        auto member = layout->second.Members.find(hwnd);
+        if (member == layout->second.Members.end()) return;
+
+        auto space = SpaceOf(*monitor, layout->second);
+        std::optional<Core::Rect> tile;
+        for (auto const& candidate : layout->second.Areas.Arrange(space.Bounds, space.Gap, space.Minimums))
+            if (candidate.Id == member->second) tile = candidate.Bounds;
+        if (!tile) return;
+
+        RECT frame = VisibleFrame(hwnd);
+        int rejoin = DipsToPixels(RejoinEdgeDip, monitor->Dpi);
+        auto inset = [&](int distance) { return distance <= rejoin ? 0 : distance; };
+
+        auto& insets = placement.Insets;
+        for (auto edge : edges)
+        {
+            switch (edge)
+            {
+            case Core::Edge::Left: insets.Left = inset(frame.left - tile->Left); break;
+            case Core::Edge::Top: insets.Top = inset(frame.top - tile->Top); break;
+            case Core::Edge::Right: insets.Right = inset(tile->Right - frame.right); break;
+            case Core::Edge::Bottom: insets.Bottom = inset(tile->Bottom - frame.bottom); break;
+            }
+        }
     }
 
     void Arranger::OnDragEnded(HWND hwnd)
@@ -1533,8 +1613,10 @@ namespace EmberPane::Managed
         // going somewhere.
         bool resized = !(leftMoved && rightMoved) && !(topMoved && bottomMoved);
 
+        // An edge with no split to move, as a column's top or bottom, stays
+        // where it was let go; the window no longer fills its area that way.
         if (resized)
-            ApplyResize(hwnd, placement, now);
+            KeepInsets(hwnd, placement, ApplyResize(hwnd, placement, now));
         else if (drag->Loosening)
         {
             Loosen(hwnd);

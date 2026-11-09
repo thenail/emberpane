@@ -14,9 +14,17 @@ namespace EmberPane::Native
         /// thought absent would lose its frame.
         bool IsOnCurrent(HWND hwnd);
 
+        /// Whether a window is on the desktop being looked at, or nothing when
+        /// that cannot be told.
+        std::optional<bool> OnCurrent(HWND hwnd);
+
         /// The desktop a window is on, as text to key a layout by. Empty when
         /// it cannot be told, as for a hidden UWP window, which reports the
-        /// null GUID, and for system windows, where the call fails.
+        /// null GUID, and for system windows, where the call fails. Also for
+        /// some windows that are plainly on a desktop: a UWP frame or a
+        /// packaged WinUI app's window can fail with TYPE_E_ELEMENTNOTFOUND
+        /// for as long as it is open, and a window just shown may not have
+        /// been given a desktop yet. Measured on Windows 11 build 26300.
         std::wstring DesktopOf(HWND hwnd);
 
     private:

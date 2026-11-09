@@ -35,6 +35,20 @@ namespace EmberPane::Core
         bool operator==(Rect const&) const = default;
     };
 
+    /// How far each edge of a window stands in from its area's, where the
+    /// user dragged an edge that has no split to move.
+    struct Insets
+    {
+        int Left{ 0 };
+        int Top{ 0 };
+        int Right{ 0 };
+        int Bottom{ 0 };
+
+        bool Empty() const { return Left == 0 && Top == 0 && Right == 0 && Bottom == 0; }
+
+        bool operator==(Insets const&) const = default;
+    };
+
     enum class Axis
     {
         /// The split is a vertical line, the children left and right.

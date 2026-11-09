@@ -40,6 +40,16 @@ namespace EmberPane::Core
                 item.Set(L"Window", static_cast<double>(window.Window));
                 item.Set(L"Process", static_cast<double>(window.Process));
                 item.Set(L"Area", static_cast<double>(window.Area));
+
+                // Only when there are any: most windows fill their area.
+                if (!window.Insets.Empty())
+                {
+                    auto insets = Json::Value::MakeArray();
+                    for (int inset : { window.Insets.Left, window.Insets.Top, window.Insets.Right, window.Insets.Bottom })
+                        insets.Append(static_cast<double>(inset));
+                    item.Set(L"Insets", std::move(insets));
+                }
+
                 list.Append(std::move(item));
             }
             return list;
@@ -56,6 +66,15 @@ namespace EmberPane::Core
                 window.Window = static_cast<std::uint64_t>(Number(item, L"Window"));
                 window.Process = static_cast<std::uint32_t>(Number(item, L"Process"));
                 window.Area = static_cast<WindowId>(Number(item, L"Area"));
+
+                if (auto insets = item.Find(L"Insets"))
+                {
+                    std::vector<int> edges;
+                    for (auto const& inset : insets->Items())
+                        edges.push_back(static_cast<int>(inset.AsNumber().value_or(0)));
+                    if (edges.size() == 4)
+                        window.Insets = { edges[0], edges[1], edges[2], edges[3] };
+                }
                 if (window.Window && window.Area) windows.push_back(window);
             }
             return windows;

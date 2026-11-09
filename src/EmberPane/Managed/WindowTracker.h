@@ -38,8 +38,10 @@ namespace EmberPane::Managed
         /// the panel, or decided here for one that would not stay put.
         void SetDisposition(HWND hwnd, Core::Disposition disposition);
 
-        /// The window's virtual desktop, as Native::VirtualDesktops has it.
-        std::wstring DesktopOf(HWND hwnd) { return m_desktops.DesktopOf(hwnd); }
+        /// The window's virtual desktop, as Native::VirtualDesktops has it, or
+        /// for one whose desktop Windows will not name but which is on the
+        /// desktop being looked at, that desktop. Empty when neither is known.
+        std::wstring DesktopOf(HWND hwnd);
         bool IsOnCurrentDesktop(HWND hwnd) { return m_desktops.IsOnCurrent(hwnd); }
 
         std::map<HWND, ManagedWindow>& Windows() { return m_windows; }

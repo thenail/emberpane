@@ -22,6 +22,9 @@ namespace EmberPane::Core
         std::uint32_t Process{ 0 };
         WindowId Area{ 0 };
 
+        /// Edges the user dragged in where there was no split to move.
+        Core::Insets Insets;
+
         bool operator==(SavedWindow const&) const = default;
     };
 

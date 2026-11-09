@@ -27,6 +27,11 @@ namespace EmberPane::Core
         Size For(WindowId id) const;
     };
 
+    /// A tile with the window's own insets taken off, each pair given back in
+    /// proportion so that at least `minimum` is left of it. An inset never
+    /// goes outside the tile.
+    Rect InsetTile(Rect const& tile, Insets const& insets, Size minimum);
+
     /// Where a window lands: its visible rectangle, not the one given to
     /// Windows, which is larger by the invisible resize border.
     struct Tile

@@ -424,3 +424,32 @@ TEST(An_empty_tree_has_no_nearest_tile)
 {
     CHECK(!LayoutTree{}.NearestTile({ 5, 5 }, Area, Gap, Minimums()));
 }
+
+TEST(A_window_with_no_insets_fills_its_tile)
+{
+    constexpr Rect Tile{ 12, 12, 1200, 1000 };
+    CHECK(InsetTile(Tile, {}, { 100, 100 }) == Tile);
+}
+
+TEST(Insets_are_taken_off_their_own_edges)
+{
+    constexpr Rect Tile{ 12, 12, 1200, 1000 };
+    CHECK((InsetTile(Tile, { 0, 300, 0, 50 }, { 100, 100 }) == Rect{ 12, 312, 1200, 950 }));
+    CHECK((InsetTile(Tile, { 20, 0, 40, 0 }, { 100, 100 }) == Rect{ 32, 12, 1160, 1000 }));
+}
+
+TEST(Insets_leave_at_least_the_minimum)
+{
+    // 988 high with a minimum of 100: 888 to give, shared three to one.
+    constexpr Rect Tile{ 12, 12, 1200, 1000 };
+    auto inset = InsetTile(Tile, { 0, 1500, 0, 500 }, { 100, 100 });
+    CHECK_EQ(inset.Height(), 100);
+    CHECK_EQ(inset.Top, 12 + 666);
+}
+
+TEST(An_inset_never_reaches_outside_its_tile)
+{
+    constexpr Rect Tile{ 12, 12, 1200, 1000 };
+    CHECK(InsetTile(Tile, { -30, -30, -30, -30 }, { 100, 100 }) == Tile);
+    CHECK((InsetTile({ 0, 0, 80, 80 }, { 10, 10, 10, 10 }, { 100, 100 }) == Rect{ 0, 0, 80, 80 }));
+}

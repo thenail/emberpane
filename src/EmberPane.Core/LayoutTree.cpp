@@ -489,4 +489,29 @@ namespace EmberPane::Core
         EachSplit(m_root.get(), [&](Node& split) { split.Ratio = ratios[next++]; });
         return true;
     }
+
+    Rect InsetTile(Rect const& tile, Insets const& insets, Size minimum)
+    {
+        // Two insets that leave less than the minimum shrink together, each
+        // keeping its share.
+        auto fit = [](int first, int second, int length, int least, int& a, int& b)
+        {
+            first = std::max(first, 0);
+            second = std::max(second, 0);
+            int room = std::max(length - least, 0);
+            if (first + second > room)
+            {
+                int total = first + second;
+                first = static_cast<int>(static_cast<long long>(first) * room / total);
+                second = std::min(second, room - first);
+            }
+            a = first;
+            b = second;
+        };
+
+        int left = 0, right = 0, top = 0, bottom = 0;
+        fit(insets.Left, insets.Right, tile.Width(), minimum.Width, left, right);
+        fit(insets.Top, insets.Bottom, tile.Height(), minimum.Height, top, bottom);
+        return { tile.Left + left, tile.Top + top, tile.Right - right, tile.Bottom - bottom };
+    }
 }

@@ -133,6 +133,11 @@ namespace EmberPane::Managed
             /// Tries at clearing Windows' snapped mark; see Place.
             int Unsnaps{ 0 };
 
+            /// Edges the user dragged in from its area where no split could
+            /// follow them. It keeps that shape inside the area as long as it
+            /// stays in it.
+            Core::Insets Insets;
+
             /// What this window refused to go below, in visible pixels.
             Core::Size Minimum;
 
@@ -230,6 +235,10 @@ namespace EmberPane::Managed
         void RemoveFromLayout(HWND hwnd);
         void Float(HWND hwnd);
 
+        /// Into the layout of the desktop it is on, if that is known now and
+        /// is not the one it is in.
+        void FollowDesktop(HWND hwnd);
+
         /// Dropped near a gap: out of the layout, where the user let it go.
         void Loosen(HWND hwnd);
 
@@ -275,7 +284,13 @@ namespace EmberPane::Managed
         std::optional<Drop> DropAt(HWND dragged, Core::Pixel cursor);
         void ShowGuide(HWND dragged, Core::Pixel cursor);
         void ApplyDrop(HWND dragged, Drop const& drop);
-        void ApplyResize(HWND hwnd, Placement& placement, RECT const& now);
+        /// Moves the split behind each edge that moved. Returns the edges that
+        /// moved with no split behind them.
+        std::vector<Core::Edge> ApplyResize(HWND hwnd, Placement& placement, RECT const& now);
+
+        /// The window keeps those edges where the user left them, inside its
+        /// area. One left close to the area's own edge goes back to it.
+        void KeepInsets(HWND hwnd, Placement& placement, std::vector<Core::Edge> const& edges);
 
         void WatchGap();
         std::optional<Gap> GapAt(Core::Pixel point);

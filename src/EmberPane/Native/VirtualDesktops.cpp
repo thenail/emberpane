@@ -33,8 +33,13 @@ namespace EmberPane::Native
 
     bool VirtualDesktops::IsOnCurrent(HWND hwnd)
     {
+        return OnCurrent(hwnd).value_or(true);
+    }
+
+    std::optional<bool> VirtualDesktops::OnCurrent(HWND hwnd)
+    {
         auto manager = Manager();
-        if (!manager) return true;
+        if (!manager) return std::nullopt;
 
         BOOL on = TRUE;
         HRESULT result = manager->IsWindowOnCurrentVirtualDesktop(hwnd, &on);
@@ -43,6 +48,7 @@ namespace EmberPane::Native
             result == HRESULT_FROM_WIN32(RPC_S_SERVER_UNAVAILABLE))
             m_manager = nullptr;
 
-        return FAILED(result) || on;
+        if (FAILED(result)) return std::nullopt;
+        return on != FALSE;
     }
 }
