@@ -454,7 +454,7 @@ Every `SampleSeconds` (2 s), with the CPU sample. Reads only, cheap, and cannot 
 - Monitor signature changed: handle as a display change (section 8.7). The signature is each monitor's key, work area and DPI. AstroDimmer polls for the same reason: some docks and KVMs send no message.
 - A `Normal` tiled window is away from `Target` with no drag in progress: something moved it, perhaps Snap or the app itself. Put it back.
 
-**Stubborn windows.** Each such correction increments `Corrections`. After 3 within 10 s, stop fighting and set the window to `Float` until it closes. The count decays on quiet ticks.
+**Stubborn windows.** Each such correction increments `Corrections`. After 3 within 10 s, stop fighting and set the window to `Float` until it closes. The count decays on quiet ticks. For 30 s after the displays change or wake, windows are put back without counting: Windows moves them itself while monitors come and go, and a screen waking on 10 November 2026 reported five monitor changes in 18 s, after which File Explorer and Unity Hub were given up on as stubborn.
 
 ### 8.6 User drags
 

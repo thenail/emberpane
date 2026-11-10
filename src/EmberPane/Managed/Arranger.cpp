@@ -29,6 +29,10 @@ namespace EmberPane::Managed
         constexpr int MaxCorrections = 3;
         constexpr ULONGLONG CorrectionWindowMs = 10'000;
 
+        /// After the displays change or wake, while Windows moves windows
+        /// itself. A wake has reported monitor changes for 18 s.
+        constexpr ULONGLONG DisplaySettleMs = 30'000;
+
         /// Past this many tries, an app that keeps its snapped mark keeps it.
         constexpr int MaxUnsnaps = 3;
 
@@ -1083,6 +1087,15 @@ namespace EmberPane::Managed
             RECT actual{};
             if (!GetWindowRect(hwnd, &actual) || Near(actual, placement.Settled)) continue;
 
+            // Windows itself, as monitors come and go: put back, but not held
+            // against the app.
+            if (now < m_displaysSettleAt)
+            {
+                placement.Corrections = 0;
+                corrected.insert(placement.Tree);
+                continue;
+            }
+
             // Something moved it: perhaps the app itself.
             if (now - placement.LastCorrection > CorrectionWindowMs)
                 placement.Corrections = 0;
@@ -1252,6 +1265,7 @@ namespace EmberPane::Managed
     {
         Trace::Log(L"monitors: " + std::to_wstring(monitors.size()));
         m_monitors = std::move(monitors);
+        m_displaysSettleAt = GetTickCount64() + DisplaySettleMs;
 
         if (!m_running || m_monitors.empty()) return;
 
@@ -1325,6 +1339,7 @@ namespace EmberPane::Managed
     void Arranger::SetDisplayOn(bool on)
     {
         m_displayOn = on;
+        if (on) m_displaysSettleAt = GetTickCount64() + DisplaySettleMs;
         UpdateGapWatch();
     }
 

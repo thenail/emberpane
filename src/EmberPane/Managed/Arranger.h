@@ -313,6 +313,10 @@ namespace EmberPane::Managed
 
         bool m_running{ false };
         bool m_displayOn{ true };
+
+        /// Until then, a window found moved was moved by Windows, as the
+        /// displays changed or woke, and does not count against its app.
+        ULONGLONG m_displaysSettleAt{ 0 };
         Core::LayoutPreset m_preset{ Core::LayoutPreset::TwoColumns };
 
         std::vector<Native::Monitor> m_monitors;
