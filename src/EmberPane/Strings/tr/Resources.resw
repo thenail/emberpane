@@ -270,6 +270,9 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>Dört alan</value>
   </data>
+  <data name="LayoutLargeInTheMiddle" xml:space="preserve">
+    <value>Ortada büyük</value>
+  </data>
   <data name="LayoutResetSizes" xml:space="preserve">
     <value>Boyutları sıfırla</value>
   </data>

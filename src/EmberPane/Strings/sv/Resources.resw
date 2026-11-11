@@ -270,6 +270,9 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>Fyra områden</value>
   </data>
+  <data name="LayoutLargeInTheMiddle" xml:space="preserve">
+    <value>Stor i mitten</value>
+  </data>
   <data name="LayoutResetSizes" xml:space="preserve">
     <value>Återställ storlekar</value>
   </data>

@@ -270,6 +270,9 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>四个区域</value>
   </data>
+  <data name="LayoutLargeInTheMiddle" xml:space="preserve">
+    <value>中间大</value>
+  </data>
   <data name="LayoutResetSizes" xml:space="preserve">
     <value>重置大小</value>
   </data>

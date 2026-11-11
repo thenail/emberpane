@@ -270,6 +270,9 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>4분할</value>
   </data>
+  <data name="LayoutLargeInTheMiddle" xml:space="preserve">
+    <value>가운데 크게</value>
+  </data>
   <data name="LayoutResetSizes" xml:space="preserve">
     <value>크기 초기화</value>
   </data>

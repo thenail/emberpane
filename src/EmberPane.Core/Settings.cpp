@@ -71,6 +71,7 @@ namespace EmberPane::Core
             { LayoutPreset::LargeAndSmall, L"LargeAndSmall" },
             { LayoutPreset::LargeAndTwoSmall, L"LargeAndTwoSmall" },
             { LayoutPreset::FourAreas, L"FourAreas" },
+            { LayoutPreset::LargeInTheMiddle, L"LargeInTheMiddle" },
         };
 
         LayoutPreset ParseLayout(std::wstring const& text, LayoutPreset fallback)

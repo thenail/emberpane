@@ -270,6 +270,9 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>Cuatro zonas</value>
   </data>
+  <data name="LayoutLargeInTheMiddle" xml:space="preserve">
+    <value>Grande en el centro</value>
+  </data>
   <data name="LayoutResetSizes" xml:space="preserve">
     <value>Restablecer tamaños</value>
   </data>

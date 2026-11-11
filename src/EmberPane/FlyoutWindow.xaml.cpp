@@ -73,6 +73,7 @@ namespace winrt::EmberPane::implementation
             case LargeAndSmall: return L"LayoutLargeAndSmall";
             case LargeAndTwoSmall: return L"LayoutLargeAndTwoSmall";
             case FourAreas: return L"LayoutFourAreas";
+            case LargeInTheMiddle: return L"LayoutLargeInTheMiddle";
             default: return L"LayoutTwoColumns";
             }
         }

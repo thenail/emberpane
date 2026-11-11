@@ -10,7 +10,7 @@ Ember Pane lives on the taskbar. Pick a layout and it arranges the apps you have
 
 ## What it does
 
-- **Pick a layout.** One at a time, two or three columns, one large with one or two small, or four areas. Everything you have open goes into it, including what was already running. With more windows than areas, they share one, in front of each other, and new windows fit in by themselves.
+- **Pick a layout.** One at a time, two or three columns, one large with one or two small, four areas, or one large in the middle. Windows' own snap layouts work too: a window snapped from its maximize button goes to the matching area. Everything you have open goes into it, including what was already running. With more windows than areas, they share one, in front of each other, and new windows fit in by themselves.
 - **A little space around each.** Choose how much, between windows and at the edge of the screen. Corners stay rounded.
 - **Resize by dragging between windows.** Rest the pointer in the gap and a line appears. Drag it, and the windows on both sides follow.
 - **Move by dragging.** Drag a window by its title bar and the areas appear. Let go over one and the window goes there. It works across monitors.

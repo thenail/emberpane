@@ -46,7 +46,7 @@ It is built the way [AstroDimmer](../../astrodimmer) is built: C++/WinRT, a smal
 | What people see | Plain words, from Resting to Flat out | The measure above is for the code. Nobody should need to know what a CPU-second is. Section 9.8 sets the rule. |
 | Minimum OS | Windows 11, build 22000 | The border and corner attributes start there. AstroDimmer's floor is 17763. |
 | Privilege | Normal user, never elevated | Keeps the per-user installer. `uiAccess` needs a signed binary in a protected folder, which a per-user install cannot provide. |
-| Windows' Snap | Off while arranging is on, for the session only | It answers the same drag as the preview. It cannot be stopped for one drag, and the user's saved preference is never changed. Section 8.6. |
+| Windows' Snap | Docking off while arranging is on, for the session only. A window Snap places by other means goes to the area that is that place | Docking answers the same drag as the preview. It cannot be stopped for one drag, and the user's saved preference is never changed. The layouts on the maximize button are Windows' own, and stay: Ember Pane follows what was picked there, with nothing to install or turn off. Section 8.6. |
 | First run | Arranging starts off; the panel opens to offer it | Moving every window on the desktop without being asked is a poor first impression. Frames start on, since they move nothing. |
 
 ## 3. What has been verified
@@ -452,7 +452,8 @@ Every `SampleSeconds` (2 s), with the CPU sample. Reads only, cheap, and cannot 
 - `IsZoomed` changed: enter or leave `Maximized`. On leaving, arrange again.
 - Covers its whole monitor with no caption: enter `Fullscreen`. Its tile is kept, nothing is moved, and no border is written.
 - Monitor signature changed: handle as a display change (section 8.7). The signature is each monitor's key, work area and DPI. AstroDimmer polls for the same reason: some docks and KVMs send no message.
-- A `Normal` tiled window is away from `Target` with no drag in progress: something moved it, perhaps Snap or the app itself. Put it back.
+- A `Normal` tiled window marked as snapped (`IsWindowArranged`) and away from where it was put: the user chose a place in Snap. It goes to the area that is that place (section 8.6, "Following Snap").
+- A `Normal` tiled window is away from `Target` with no drag in progress: something moved it, perhaps the app itself. Put it back.
 
 **Stubborn windows.** Each such correction increments `Corrections`. After 3 within 10 s, stop fighting and set the window to `Float` until it closes. The count decays on quiet ticks. For 30 s after the displays change or wake, windows are put back without counting: Windows moves them itself while monitors come and go, and a screen waking on 10 November 2026 reported five monitor changes in 18 s, after which File Explorer and Unity Hub were given up on as stubborn.
 
@@ -465,7 +466,7 @@ Every `SampleSeconds` (2 s), with the CPU sample. Reads only, cheap, and cannot 
 | Nothing, within tolerance | Nothing |
 | Size | For each edge that moved, `LayoutTree::MoveEdge`. Arrange the tree. A corner drag moves two edges. |
 | Position only | As the drop preview showed (below), or back where it was if it showed nothing |
-| It ended maximized or snapped by Windows | Maximized: leave it alone. Snapped: the reconcile tick puts it back. |
+| It ended maximized or snapped by Windows | Maximized: leave it alone. Snapped: the reconcile tick takes it to the matching area (below). |
 
 The gap is the drag handle, with nothing extra to build: it works through the windows' own invisible resize borders, 9 px wide at 150%. A pixel the borders do not reach falls through to the desktop, where a press does nothing. Measured at 150%:
 
@@ -503,6 +504,20 @@ Dropping puts the window in that area, in front of whatever is there. Nothing el
 - The change is for the session only: no `SPIF_UPDATEINIFILE`, so the saved preference in `HKCU\Control Panel\Desktop` is never touched. Windows' Settings page goes on showing the user's choice.
 - It is restored to that saved preference, not to what was found, because after a crash what was found is what the last run left. The next start of Ember Pane puts it right, and so does signing out.
 - If the user has Snap off already, nothing changes.
+
+**Following Snap.** Docking is off, but Snap still places windows from the layouts on the maximize button, from `Win`+`Z`, and with `Win` and the arrow keys. Rather than undo that, Ember Pane takes it as the user saying where the window goes. The presets are Snap's layouts: two columns, two thirds and a third (large and small), three columns, a half and two quarters (large and two small), four areas, and a quarter, a half and a quarter (large in the middle).
+
+Snap says only where the window went, not which of its layouts was picked, and the left half is in two of them. `Core::MatchSnap` decides, on the picture's square, an edge within 6% counting as the same edge:
+
+1. An area of the layout in use, as resized, that is the same place: the window goes there, as if dropped on it.
+2. Otherwise the place in Snap's version of each preset, at Windows' sizes. The layout in use if it has that place, so a half taken in large and two small keeps that layout. Otherwise the preset with the fewest areas that does, which becomes the layout: the setting changes, every window is dealt into the new areas round the snapped one, and the panel shows it.
+3. Otherwise the area of the layout in use holding more than half of the window, as for a monitor stood on end, whose layouts Snap stacks. None: put back, as before.
+
+- A place picked on the maximize button arrives as a move: `MOVESIZESTART` and `MOVESIZEEND`, under a second apart, after the click. Taken for a drag, it showed the guide and dropped the window wherever the pointer was, up by the button, sometimes near a gap and so out of the layout. A drag is by hand only if the primary button is down during it. One that is not shows nothing, and once it ends, Snap's mark is looked for at 150 ms and 500 ms: marked, it is a snap; not, as after a move from the keyboard, the window goes back. A drag that ends marked is Snap's too, since docking is off.
+- `Win` and an arrow key moves nothing through that loop, and is seen on the reconcile tick, up to 2 s later, or as the window leaves maximized.
+- `Place` clears the mark, so to Windows a window in an area is not snapped: `Win`+`Up` maximizes it rather than taking it to a quarter, and `Win`+`Down` minimizes it.
+- After a snap into a layout of several places, Snap offers the other windows for the places left (Snap Assist). Ember Pane has already filled them, so nothing waits on it: a window picked there is one more snap, and goes to that area.
+- The window fills its area again, its insets dropped, and its app's next window opens there too.
 
 **On a window's own edge, neighbours follow on release.** On the gap line they follow live (section 9.7). Live following for edge drags can come after v1, using an `EVENT_OBJECT_LOCATIONCHANGE` hook on the dragged window's process only, installed for the length of the drag.
 
@@ -593,6 +608,11 @@ Left-click toggles the panel; right-click opens Settings, as `TrayIcon` already 
 │ │ Large,   │ │ Large,   │ │  Four    │ │
 │ │ small    │ │ two small│ │  areas   │ │
 │ └──────────┘ └──────────┘ └──────────┘ │
+│ ┌──────────┐                           │
+│ │ █ ████ █ │                           │
+│ │ Large in │                           │
+│ │  middle  │                           │
+│ └──────────┘                           │
 ├────────────────────────────────────────┤
 │                                     ⚙  │
 └────────────────────────────────────────┘
@@ -726,7 +746,7 @@ Same transport as AstroDimmer: JSON objects with a `type`, sent by `WM_COPYDATA`
 }
 ```
 
-`Layout` is `OneAtATime`, `TwoColumns`, `ThreeColumns`, `LargeAndSmall`, `LargeAndTwoSmall` or `FourAreas`. `Corners` is `Round`, `RoundSmall` or `Leave`. `Mode` is `Tile`, `Float` or `Ignore`. A rule may add `"Class"` and `"Title"`, the latter matching as a substring. A change arrives as `saveSettings` and is applied at once: the host re-classifies and arranges.
+`Layout` is `OneAtATime`, `TwoColumns`, `ThreeColumns`, `LargeAndSmall`, `LargeAndTwoSmall`, `FourAreas` or `LargeInTheMiddle`. A snap to a place only another preset has changes it from the host, which saves it and sends `settings` to the panel. `Corners` is `Round`, `RoundSmall` or `Leave`. `Mode` is `Tile`, `Float` or `Ignore`. A rule may add `"Class"` and `"Title"`, the latter matching as a substring. A change arrives as `saveSettings` and is applied at once: the host re-classifies and arranges.
 
 ## 12. Build, packaging and release
 
@@ -752,7 +772,7 @@ The folder is not yet a git repository. `git init` is the first step of M1.
 | Some custom-framed apps show no border or corners | The frame is missing on those apps | Chrome passes (section 3). VS Code and Office are still to check. If one fails, it floats without a frame. |
 | 2 px is too faint | The main visual feature goes unnoticed | The gate in M2 |
 | Apps resist being placed | Flicker | Settling caps retries; stubborn windows float |
-| Windows' own Snap fights the tiling | Two previews for one drag | Settled: docking is off while arranging is on (section 8.6). `Win`+arrow keys are still to check. |
+| Windows' own Snap fights the tiling | Two previews for one drag | Settled: docking is off while arranging is on, and a window Snap places by other means goes to the matching area (section 8.6). |
 | Undocumented desktop behaviour | A window ends up in the wrong tree | Only the documented interface is used; the worst case is one misplaced window |
 
 ### 13.2 What the app will not do well
@@ -863,7 +883,7 @@ Not yet checked, and for the first real use to settle:
 | Arranging real apps | Deliberately left for the first real use |
 | The installer running | It is built, but installing was left to the user |
 | Real mouse drags on real apps | Real drags on throwaway windows passed in 6 runs of 7: guide, preview, landing, and Snap kept out. One early run, before drags were logged, showed no preview and did not land, and the cause was not found. Resizing and the gap line were still simulated. |
-| Keyboard Snap beside tiling | `Win`+arrow keys have not been tried with docking off |
+| Following Snap | `Core::MatchSnap` is tested. Picking a place on the maximize button, `Win`+arrow keys and Snap Assist have not been tried live with docking off |
 | Snap Layouts at the top of the screen | Dragging there no longer maximizes; whether the layout bar still appears has not been looked at |
 | More than one monitor, and docking | The logic is written; the tests ran on one monitor |
 | Virtual desktops | The logic is written; not exercised |

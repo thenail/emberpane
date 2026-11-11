@@ -270,6 +270,9 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>Четыре области</value>
   </data>
+  <data name="LayoutLargeInTheMiddle" xml:space="preserve">
+    <value>Большое в центре</value>
+  </data>
   <data name="LayoutResetSizes" xml:space="preserve">
     <value>Сбросить размеры</value>
   </data>

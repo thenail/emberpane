@@ -72,6 +72,13 @@ namespace EmberPane::Managed
             return dpiX;
         }
 
+        /// The primary button, whichever physical one that is.
+        bool PrimaryButtonDown()
+        {
+            int button = GetSystemMetrics(SM_SWAPBUTTON) ? VK_RBUTTON : VK_LBUTTON;
+            return (GetAsyncKeyState(button) & 0x8000) != 0;
+        }
+
         std::vector<HWND> FrontToBack()
         {
             std::vector<HWND> windows;
@@ -105,6 +112,10 @@ namespace EmberPane::Managed
         m_dragWatch = m_dispatcher.CreateTimer();
         m_dragWatch.Interval(30ms);
         m_dragWatch.Tick([this](auto&&, auto&&) { WatchDrag(); });
+
+        m_snapWatch = m_dispatcher.CreateTimer();
+        m_snapWatch.IsRepeating(false);
+        m_snapWatch.Tick([this](auto&&, auto&&) { CheckForSnap(m_snapWatchLast); });
 
         m_gapWatch = m_dispatcher.CreateTimer();
         m_gapWatch.Interval(100ms);
@@ -151,6 +162,7 @@ namespace EmberPane::Managed
 
         m_settle.Stop();
         m_dragWatch.Stop();
+        m_snapWatch.Stop();
         m_gapWatch.Stop();
     }
 
@@ -224,6 +236,8 @@ namespace EmberPane::Managed
         m_placements.clear();
         m_returning.clear();
         m_settling.clear();
+        m_maybeSnapped.clear();
+        m_snapWatch.Stop();
 
         m_preview.Hide();
         m_guide.Hide();
@@ -267,14 +281,28 @@ namespace EmberPane::Managed
         UpdateGapWatch();
     }
 
-    void Arranger::Rebuild()
+    void Arranger::Rebuild(std::vector<Pinned> const& pinned)
     {
         m_layouts.clear();
         m_parked.clear();
         m_returning.clear();
 
+        // First, so the others are dealt round them.
+        std::set<HWND> placed;
+        for (auto const& pin : pinned)
+        {
+            if (auto placement = m_placements.find(pin.Hwnd); placement != m_placements.end())
+            {
+                placement->second.Tree = pin.Tree;
+                LayoutFor(pin.Tree).Members[pin.Hwnd] = pin.Area;
+                placed.insert(pin.Hwnd);
+            }
+        }
+
         for (auto hwnd : FrontToBack())
         {
+            if (placed.contains(hwnd)) continue;
+
             auto placement = m_placements.find(hwnd);
             if (placement == m_placements.end()) continue;
 
@@ -1002,10 +1030,17 @@ namespace EmberPane::Managed
             return;
         }
 
-        // Back from maximized or fullscreen: to its area.
+        // Back from maximized or fullscreen: to its area. Unless it came back
+        // snapped, as Win and an arrow key does: then to the area that is
+        // that place.
         if (state == WindowState::Normal)
             if (auto found = m_placements.find(hwnd); found != m_placements.end())
-                ArrangeTree(found->second.Tree);
+            {
+                if (IsWindowArranged(hwnd))
+                    TakeSnaps({ hwnd });
+                else
+                    ArrangeTree(found->second.Tree);
+            }
     }
 
     void Arranger::OnActivated(HWND hwnd)
@@ -1065,27 +1100,37 @@ namespace EmberPane::Managed
             FollowDesktop(hwnd);
 
         std::vector<HWND> stubborn;
+        std::vector<HWND> snapped;
         std::set<TreeKey> corrected;
         auto now = GetTickCount64();
 
         for (auto& [hwnd, placement] : m_placements)
         {
-            if ((m_drag && m_drag->Hwnd == hwnd) || m_settling.contains(hwnd)) continue;
+            if ((m_drag && m_drag->Hwnd == hwnd) || m_settling.contains(hwnd) || m_maybeSnapped.contains(hwnd))
+                continue;
 
             auto window = m_tracker.Windows().find(hwnd);
             if (window == m_tracker.Windows().end() || window->second.State != WindowState::Normal) continue;
 
-            // Snapped since it was placed, perhaps with Win and an arrow key.
+            RECT actual{};
+            if (!GetWindowRect(hwnd, &actual)) continue;
+
             if (IsWindowArranged(hwnd))
             {
-                if (placement.Unsnaps < MaxUnsnaps)
+                // Snapped since it was placed: from the layouts on its maximize
+                // button, Win+Z, or Win and an arrow key. The user chose a
+                // place, so it goes to the area that is that place.
+                if (!Near(actual, placement.Settled))
+                    snapped.push_back(hwnd);
+
+                // Where it was put, but still marked: the mark is cleared.
+                else if (placement.Unsnaps < MaxUnsnaps)
                     corrected.insert(placement.Tree);
                 continue;
             }
             placement.Unsnaps = 0;
 
-            RECT actual{};
-            if (!GetWindowRect(hwnd, &actual) || Near(actual, placement.Settled)) continue;
+            if (Near(actual, placement.Settled)) continue;
 
             // Windows itself, as monitors come and go: put back, but not held
             // against the app.
@@ -1118,9 +1163,192 @@ namespace EmberPane::Managed
         for (auto const& key : corrected)
             ArrangeTree(key);
 
+        // After the others: a snap may change the preset, which deals every
+        // window again.
+        if (!snapped.empty())
+            TakeSnaps(snapped);
+
         // On the tick rather than at each change: there are many, and a few
         // seconds lost to a crash is nothing a drag cannot put right.
         SaveState();
+    }
+
+    std::vector<HWND> Arranger::FreshSnaps()
+    {
+        std::vector<HWND> fresh;
+        for (auto const& [hwnd, placement] : m_placements)
+        {
+            if ((m_drag && m_drag->Hwnd == hwnd) || m_settling.contains(hwnd)) continue;
+            if (IsZoomed(hwnd) || IsIconic(hwnd) || !IsWindowArranged(hwnd)) continue;
+
+            RECT actual{};
+            if (GetWindowRect(hwnd, &actual) && !Near(actual, placement.Settled))
+                fresh.push_back(hwnd);
+        }
+        return fresh;
+    }
+
+    void Arranger::TakeSnaps(std::vector<HWND> hint)
+    {
+        // The window the user chose first, which Snap leaves in front: it
+        // decides when no one preset has a place for them all.
+        std::vector<HWND> windows = std::move(hint);
+        for (auto hwnd : FreshSnaps())
+            if (std::ranges::find(windows, hwnd) == windows.end())
+                windows.push_back(hwnd);
+
+        std::erase_if(windows, [&](HWND hwnd) { return !m_placements.contains(hwnd); });
+        if (windows.empty()) return;
+
+        // Taken here: not looked at again once the move has cleared the mark.
+        for (auto hwnd : windows)
+            m_maybeSnapped.erase(hwnd);
+
+        HWND front = GetForegroundWindow();
+        if (auto chosen = std::ranges::find(windows, front); chosen != windows.end())
+            std::rotate(windows.begin(), chosen, chosen + 1);
+
+        // All read before anything moves. Snap may have taken them to another
+        // monitor, as Win+Shift and an arrow does: the layout there is the one
+        // they join. Never to another desktop, which the tracker may not know
+        // yet.
+        struct Snapped
+        {
+            HWND Hwnd;
+            TreeKey Tree;
+            Core::Rect Frame;
+        };
+        std::map<TreeKey, std::vector<Snapped>> byTree;
+        std::vector<TreeKey> order;
+        for (auto hwnd : windows)
+        {
+            TreeKey key{ KeyFor(hwnd).Monitor, m_placements[hwnd].Tree.Desktop };
+            if (!MonitorOf(key)) continue;
+
+            if (!byTree.contains(key)) order.push_back(key);
+            byTree[key].push_back({ hwnd, key, ToRect(VisibleFrame(hwnd)) });
+        }
+
+        std::vector<Pinned> pinned;
+        std::set<TreeKey> touched;
+        std::optional<Core::LayoutPreset> preset;
+
+        for (auto const& key : order)
+        {
+            auto const& group = byTree[key];
+            auto monitor = MonitorOf(key);
+
+            std::vector<Core::Rect> frames;
+            for (auto const& snapped : group)
+                frames.push_back(snapped.Frame);
+
+            // One preset for the whole desktop: the monitor of the window the
+            // user chose decides it, and the others are matched to it.
+            auto chosen = preset.value_or(m_preset);
+            auto areas = chosen == m_preset ? LayoutFor(key).Areas : Core::MakeLayout(chosen);
+            auto match = Core::MatchSnaps(frames, ToRect(monitor->Work), chosen, areas);
+            if (match && preset && match->Preset != *preset)
+                match.reset();
+            if (match && !preset)
+                preset = match->Preset;
+
+            for (size_t i = 0; i < group.size(); ++i)
+            {
+                auto hwnd = group[i].Hwnd;
+                auto& placement = m_placements[hwnd];
+                touched.insert(placement.Tree);
+
+                // Somewhere no area is, as across two: back to its own.
+                if (!match || !match->Areas[i])
+                {
+                    Trace::Log(L"snap: a place no area matches - put back");
+                    continue;
+                }
+
+                auto area = *match->Areas[i];
+                Trace::Log(L"snap: to area " + std::to_wstring(area) + L" of layout " +
+                           std::to_wstring(static_cast<int>(match->Preset)));
+
+                // Snap sized it to the place, so it fills its area again, and
+                // a window that kept its mark before is tried again.
+                placement.Insets = {};
+                placement.Unsnaps = 0;
+                pinned.push_back({ hwnd, key, area });
+            }
+        }
+
+        if (preset && *preset != m_preset)
+        {
+            m_preset = *preset;
+            Rebuild(pinned);
+            for (auto const& pin : pinned)
+                RememberArea(pin.Hwnd, pin.Area);
+            PresetChosen();
+            return;
+        }
+
+        // The same preset: as if each were dropped there, and only they move.
+        for (auto const& pin : pinned)
+        {
+            auto& placement = m_placements[pin.Hwnd];
+            if (auto from = m_layouts.find(placement.Tree); from != m_layouts.end())
+                from->second.Members.erase(pin.Hwnd);
+
+            LayoutFor(pin.Tree).Members[pin.Hwnd] = pin.Area;
+            placement.Tree = pin.Tree;
+            RememberArea(pin.Hwnd, pin.Area);
+            touched.insert(pin.Tree);
+        }
+
+        for (auto const& key : touched)
+            ArrangeTree(key);
+        UpdateGapWatch();
+    }
+
+    void Arranger::WatchForSnap(HWND hwnd)
+    {
+        m_maybeSnapped.insert(hwnd);
+        m_snapWatchLast = false;
+        m_snapWatch.Stop();
+        m_snapWatch.Interval(150ms);
+        m_snapWatch.Start();
+    }
+
+    void Arranger::CheckForSnap(bool last)
+    {
+        std::vector<HWND> snapped, later;
+        std::set<TreeKey> back;
+        for (auto hwnd : std::exchange(m_maybeSnapped, {}))
+        {
+            auto placement = m_placements.find(hwnd);
+            if (placement == m_placements.end() || IsZoomed(hwnd) || IsIconic(hwnd)) continue;
+
+            if (IsWindowArranged(hwnd))
+                snapped.push_back(hwnd);
+            else if (!last)
+                later.push_back(hwnd);
+            else
+            {
+                // Moved from the keyboard, or Snap never marked it: back to
+                // its area, as a drag let go nowhere would be.
+                Trace::Log(L"snap: none after a move not by hand - put back");
+                back.insert(placement->second.Tree);
+            }
+        }
+
+        // Snaps first, with any other window Snap placed beside them: putting
+        // a layout back would pull those out of their places unread.
+        if (!snapped.empty())
+            TakeSnaps(snapped);
+        for (auto const& key : back)
+            ArrangeTree(key);
+
+        if (later.empty()) return;
+
+        m_maybeSnapped.insert(later.begin(), later.end());
+        m_snapWatchLast = true;
+        m_snapWatch.Interval(350ms);
+        m_snapWatch.Start();
     }
 
     // ------------------------------------------------------------ across a restart
@@ -1351,11 +1579,12 @@ namespace EmberPane::Managed
 
         Dragged drag;
         drag.Hwnd = hwnd;
+        drag.ByHand = PrimaryButtonDown();
         GetWindowRect(hwnd, &drag.Start);
         drag.Resized = drag.Start;
         m_drag = drag;
 
-        Trace::Log(L"drag: started");
+        Trace::Log(std::wstring(L"drag: started, button ") + (drag.ByHand ? L"down" : L"up"));
 
         // Floating windows show no preview, but for those dropped near a gap,
         // which can be dropped on an area again. The drag still has to be
@@ -1367,6 +1596,12 @@ namespace EmberPane::Managed
     void Arranger::WatchDrag()
     {
         if (!m_drag) return;
+
+        // Snap moving a window it was told where to put, after the click on
+        // its layouts: nothing to show, and the pointer is no guide to where
+        // it goes. A real drag holds the button from the start.
+        m_drag->ByHand = m_drag->ByHand || PrimaryButtonDown();
+        if (!m_drag->ByHand) return;
 
         RECT now{};
         if (!GetWindowRect(m_drag->Hwnd, &now)) return;
@@ -1637,8 +1872,27 @@ namespace EmberPane::Managed
             }
         } timed;
 
+        // Not a drag: Snap placing it, or a move from the keyboard. Snap's mark
+        // says which, as the move ends or a moment later.
+        if (!drag->ByHand)
+        {
+            Trace::Log(L"drag: ended, not by hand - looking for a snap");
+            WatchForSnap(hwnd);
+            return;
+        }
+
         Trace::Log(std::wstring(L"drag: ended, moving ") + (drag->Moving ? L"yes" : L"no") + L", landing " +
-                   (drag->Landing ? L"yes" : L"no") + L", loosening " + (drag->Loosening ? L"yes" : L"no"));
+                   (drag->Landing ? L"yes" : L"no") + L", loosening " + (drag->Loosening ? L"yes" : L"no") +
+                   L", snapped " + (IsWindowArranged(hwnd) ? L"yes" : L"no"));
+
+        // Docking is off, so a drag never ends snapped: that was Snap, with
+        // the button still down from the click on its layouts.
+        if (IsWindowArranged(hwnd))
+        {
+            if (m_placements.contains(hwnd))
+                WatchForSnap(hwnd);
+            return;
+        }
 
         // Loose: it stays where it was let go, unless that was on an area.
         if (m_loose.contains(hwnd))

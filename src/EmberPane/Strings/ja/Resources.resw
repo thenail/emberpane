@@ -270,6 +270,9 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>4 分割</value>
   </data>
+  <data name="LayoutLargeInTheMiddle" xml:space="preserve">
+    <value>中央に大</value>
+  </data>
   <data name="LayoutResetSizes" xml:space="preserve">
     <value>サイズをリセット</value>
   </data>

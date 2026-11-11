@@ -83,6 +83,21 @@ namespace EmberPane
                 Trace::Log(L"areas: sent in " + std::to_wstring(std::lround(took)) + L" ms");
         });
 
+        // A snap chose another layout: it is the setting now, saved, and the
+        // panel shows it.
+        m_arranger->PresetChosen.Add([this]
+        {
+            m_settings.Arrange.Layout = m_arranger->Preset();
+
+            // A test run saves nothing, as for --arrange above.
+            if (!CommandLine::Value(L"--only-title"))
+                m_settings.Save();
+
+            auto m = Link::Make(Link::Type::Settings);
+            m.Set(L"settings", m_settings.ToJson());
+            Send(m);
+        });
+
         m_events->DisplaysChanged = [this]
         {
             Trace::Log(L"displays changed");

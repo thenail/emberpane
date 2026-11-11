@@ -93,6 +93,10 @@ namespace EmberPane::Managed
         /// The layout in use.
         Core::LayoutPreset Preset() const { return m_preset; }
 
+        /// The layout in use changed here, not in the settings: a window was
+        /// snapped to a place only another preset has. The setting follows.
+        Event<> PresetChosen;
+
         /// The areas of the layout the panel shows, on the panel's square, when
         /// they have been resized away from the preset's. That is the layout of
         /// the taskbar's monitor, on the desktop being looked at, as the panel
@@ -176,6 +180,13 @@ namespace EmberPane::Managed
             HWND Hwnd{};
             RECT Start{};
             bool Moving{ false };
+
+            /// The mouse button has been down during it. Snap placing a window
+            /// from the layouts on its maximize button moves it too, after the
+            /// click, and that is not a drag: no guide, and no drop where the
+            /// pointer happens to be.
+            bool ByHand{ false };
+
             std::optional<Drop> Landing;
 
             /// Near a gap between two areas: let go here, it leaves the layout.
@@ -253,9 +264,34 @@ namespace EmberPane::Managed
         /// Dropped on an area again, after Loosen.
         void Rejoin(HWND hwnd, Drop const& drop);
 
+        /// A window that goes to a given area whatever else is dealt.
+        struct Pinned
+        {
+            HWND Hwnd{};
+            TreeKey Tree;
+            Core::WindowId Area{ 0 };
+        };
+
         /// The preset changed: everything is dealt into the new areas,
         /// frontmost first, so the windows in use are the ones on show.
-        void Rebuild();
+        void Rebuild(std::vector<Pinned> const& pinned = {});
+
+        /// Windows' Snap put windows somewhere: each into the area that is
+        /// that place, changing preset if only another one has them. `hint` is
+        /// the window known to be snapped; every other window freshly snapped
+        /// is taken with it, since Snap places several at once for the layouts
+        /// it suggests, and arranging one layout would pull the others out of
+        /// their places before they were read.
+        void TakeSnaps(std::vector<HWND> hint);
+
+        /// Windows of the layout marked as snapped and away from where they
+        /// were put.
+        std::vector<HWND> FreshSnaps();
+
+        /// After a move not made by hand: Snap marks the window as snapped as
+        /// the move ends, or a moment later. Looked at twice, then put back.
+        void WatchForSnap(HWND hwnd);
+        void CheckForSnap(bool last);
 
         void OnAdded(HWND hwnd);
         void OnRemoved(HWND hwnd);
@@ -356,6 +392,11 @@ namespace EmberPane::Managed
 
         std::optional<Dragged> m_drag;
         winrt::Windows::System::DispatcherQueueTimer m_dragWatch{ nullptr };
+
+        /// Windows moved but not by hand, until Snap's mark has been looked for.
+        std::set<HWND> m_maybeSnapped;
+        winrt::Windows::System::DispatcherQueueTimer m_snapWatch{ nullptr };
+        bool m_snapWatchLast{ false };
         DropPreview m_preview;
         DropGuide m_guide;
 

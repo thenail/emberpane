@@ -33,6 +33,10 @@ namespace EmberPane::Core
         LargeAndSmall,
         LargeAndTwoSmall,
         FourAreas,
+
+        /// A half in the middle, a quarter each side, as Windows' Snap has it.
+        /// Last, since the layout state saves presets by number.
+        LargeInTheMiddle,
     };
 
     struct ArrangeSettings

@@ -270,6 +270,9 @@
   <data name="LayoutFourAreas" xml:space="preserve">
     <value>Neljä aluetta</value>
   </data>
+  <data name="LayoutLargeInTheMiddle" xml:space="preserve">
+    <value>Suuri keskellä</value>
+  </data>
   <data name="LayoutResetSizes" xml:space="preserve">
     <value>Palauta koot</value>
   </data>
