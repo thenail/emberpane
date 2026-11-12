@@ -1157,8 +1157,13 @@ namespace EmberPane::Managed
             }
         }
 
+        // Left where it put itself, but loose: dragged onto an area, it joins
+        // the layout again, as one let go near a gap does.
         for (auto hwnd : stubborn)
+        {
+            m_loose.insert(hwnd);
             Float(hwnd);
+        }
 
         for (auto const& key : corrected)
             ArrangeTree(key);
